@@ -1,5 +1,5 @@
 import { Dimension, Entity, ItemStack, Vector3, world, Block, ScoreboardObjective, Container, EntityInventoryComponent, system } from "@minecraft/server";
-import ObjectUtil from "./ObjectUtil";
+import * as ObjectUtil from "./ObjectUtil";
 
 export class BlockEntity {
     
@@ -17,7 +17,7 @@ export class BlockEntity {
     };
     //对使用动态属性存储物品的方块实体检测掉落
     public blockEntityLoot(args: BlockEntityData, id: string, list: any[] | undefined, amount: number = 1) {
-        if (!ObjectUtil.isEqual(args.entity.location, args.blockEntityDataLocation)) args.entity.teleport(args.blockEntityDataLocation);
+        if (!ObjectUtil.isSamePos(args.entity.location, args.blockEntityDataLocation)) args.entity.teleport(args.blockEntityDataLocation);
         if (args.block?.typeId == id) return;
         if (list?.length) {
             for (const itemStack of list) {
@@ -28,7 +28,7 @@ export class BlockEntity {
     };
     //对使用容器组件存储物品的方块实体检测掉落 仅供橱柜使用
     public entityContainerLoot(args: BlockEntityData, id: string){
-        if (!ObjectUtil.isEqual(args.entity.location, args.blockEntityDataLocation)) args.entity.teleport(args.blockEntityDataLocation);
+        if (!ObjectUtil.isSamePos(args.entity.location, args.blockEntityDataLocation)) args.entity.teleport(args.blockEntityDataLocation);
         if (args.block?.typeId == id) return;
         const entity = args.entity as Entity;
         const dimension = args.dimension;

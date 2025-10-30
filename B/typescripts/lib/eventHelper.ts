@@ -12,10 +12,3 @@ export const methodEventSub = (event: any, opt?: any): MethodDecorator => {
         }
     }
 }
-
-export const methodEEventSub = (event: any): MethodDecorator => {
-    return (target: Object, propertyKey: string | symbol, descriptor: PropertyDescriptor) => {
-        new event().subscribe(descriptor.value);
-    }
-}
-

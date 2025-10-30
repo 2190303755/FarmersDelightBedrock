@@ -1,0 +1,34 @@
+import { Player, ScoreboardObjective, world, system } from "@minecraft/server";
+import { MESSAGE_HANDLERS } from "./MessageDispatcher";
+export const TickEvent = {
+    subscribe(callback: () => void) {
+        system.runInterval(callback);
+    },
+} as const;
+
+export const PlayerTickEvent = {
+    subscribe(callback: (player: Player) => void) {
+        system.runInterval(() => {
+            for (const player of world.getAllPlayers()) {
+                callback(player);
+            }
+        });
+    },
+} as const;
+
+export const ReceieveMessageEvent = {
+    subscribe(callback: (message: string) => void, identifier: string) {
+        MESSAGE_HANDLERS.set(identifier, callback);
+    },
+} as const;
+
+export const ScoreboardLoadEvent = {
+    subscribe(callback: (objectives: ScoreboardObjective[]) => void) {
+        system.run(() => {
+            const objectives = world.scoreboard.getObjectives();
+            if (objectives?.length) {
+                callback(objectives)
+            }
+        });
+    },
+} as const;

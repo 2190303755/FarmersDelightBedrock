@@ -1,7 +1,7 @@
 import { Block, Container, Entity, EntityInventoryComponent, EntitySpawnAfterEvent, ItemStack, Vector3, system, world } from "@minecraft/server";
 import { methodEventSub } from "../../lib/eventHelper";
 import { BlockEntity, BlockEntityData } from "../../lib/BlockEntity";
-import ObjectUtil from "../../lib/ObjectUtil";
+import * as ObjectUtil from "../../lib/ObjectUtil";
 import { vanillaCookingPotRecipe } from "../../data/recipe/cookingPotRecipe";
 import { CookingPotRecipe } from "../../lib/CookingPotRecipe";
 import { heatConductors, heatSources } from "../../data/heatBlocks";
@@ -35,7 +35,7 @@ world.afterEvents.pistonActivate
 //刷新方块实体状态以及防TP
 function blockEntityLoot(args: BlockEntityData, id: string) {
     const cookingPotblock = new ItemStack('farmersdelight:cooking_pot');
-    if (!ObjectUtil.isEqual(args.entity.location, args.blockEntityDataLocation)) args.entity.teleport(args.blockEntityDataLocation);
+    if (!ObjectUtil.isSamePos(args.entity.location, args.blockEntityDataLocation)) args.entity.teleport(args.blockEntityDataLocation);
     if (args.block?.typeId == id) return;
     
     const inventory = args.entity?.getComponent("inventory") as EntityInventoryComponent;

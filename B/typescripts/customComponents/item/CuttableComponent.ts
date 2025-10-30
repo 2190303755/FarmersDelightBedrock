@@ -8,7 +8,6 @@ export type CuttingBroadComponentParams = {
     tool: {
         type:  "tag" | "item",
         name: string
-
     }
 };
 class CuttableComponent implements ItemCustomComponent {

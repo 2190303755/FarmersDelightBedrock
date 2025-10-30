@@ -8,7 +8,7 @@ import { StoveBlockEntity } from "./block/stove/StoveBlockEntity";
 import { Skillet } from "./block/skillet/Skillet";
 import { SkilletEntity } from "./block/skillet/SkilletEntity";
 import { Knife } from "./item/Knife";
-import { CookingPotRecipeRegistries } from "./init/CookingPotRecipeRegistries";
+import "./init/CookingPotRecipeRegistry";
 import { Food } from "./item/Food";
 import { Cabinets } from "./block/cabinet/Cabinets"
 import { CabinetsBlockEntity } from "./block/cabinet/CabinetsBlockEntity";
@@ -42,7 +42,6 @@ import { Basket } from "./block/basket/Basket";
 import { BasketBlockEntity } from "./block/basket/BasketBlockEntity";
 import "./customComponents/item/KnifeComponent"
 
-CookingPotRecipeRegistries.initCookingPotScoRegistries();
 CuttingBoardRegistries.initCuttingBoardScoRegistries();
 CookRecipeRegistries.initCookScoRegistries();
 
@@ -99,4 +98,3 @@ new Food();
 new Knife();
 new BlockFood();
 new IncompleteBlocks();
-new CookingPotRecipeRegistries();
