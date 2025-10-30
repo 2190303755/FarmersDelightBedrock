@@ -1,5 +1,5 @@
 import { BlockCustomComponent, BlockComponentOnPlaceEvent, Vector3, BlockComponentPlayerBreakEvent, system, StartupEvent, world, PlayerBreakBlockBeforeEvent, ItemComponentTypes, BlockComponentPlayerPlaceBeforeEvent, BlockComponentTickEvent, EntityInventoryComponent, ItemEnchantableComponent, Dimension, CustomComponentParameters, BlockComponentPlayerInteractEvent, Effect, ItemStack } from "@minecraft/server";
-import { ItemUtil } from "../../lib/ItemUtil";
+import  * as ItemUtil from "../../lib/ItemUtil";
 import { methodEventSub } from "../../lib/eventHelper";
 import type * as minecraftvanilladata from '@minecraft/vanilla-data';
 
@@ -77,7 +77,7 @@ export class PieComponent implements BlockCustomComponent {
             if (!container) return;
             args.cancel = true
             system.runTimeout(() => {
-                ItemUtil.damageItem(container, player.selectedSlotIndex)
+                ItemUtil.hurtItem(container, player.selectedSlotIndex)
                 ItemUtil.spawnItem(block, block.typeId)
                 block.dimension.runCommand(`/setblock ${x} ${y} ${z} air`)
 

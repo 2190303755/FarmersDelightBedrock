@@ -1,4 +1,13 @@
-import { Dimension, Entity, ItemStack, Vector3, world, Block, ScoreboardObjective, Container, EntityInventoryComponent, system } from "@minecraft/server";
+import {
+    Block,
+    Container,
+    Dimension,
+    Entity,
+    EntityInventoryComponent,
+    ItemStack,
+    system,
+    Vector3,
+} from "@minecraft/server";
 import * as ObjectUtil from "./ObjectUtil";
 
 export class BlockEntity {
@@ -9,8 +18,12 @@ export class BlockEntity {
             const dimension: Dimension = entity?.dimension ?? undefined;
             const blockEntityDataLocation = entity.getDynamicProperty('farmersdelight:blockEntityDataLocation') as Vector3;
             const block = dimension.getBlock(blockEntityDataLocation) as Block;
-            const blockEntityData: BlockEntityData = { entity: entity, dimension: dimension, blockEntityDataLocation: blockEntityDataLocation, block: block}
-            return blockEntityData;
+            return {
+                entity: entity,
+                dimension: dimension,
+                blockEntityDataLocation: blockEntityDataLocation,
+                block: block
+            };
         } catch (error) {
             return undefined;
         }

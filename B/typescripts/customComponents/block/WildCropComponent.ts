@@ -1,5 +1,5 @@
 import { BlockCustomComponent, BlockComponentOnPlaceEvent, Vector3, BlockComponentPlayerBreakEvent, system, StartupEvent, world, PlayerBreakBlockBeforeEvent, ItemComponentTypes, BlockComponentPlayerPlaceBeforeEvent, BlockComponentTickEvent, EntityInventoryComponent, ItemEnchantableComponent, Dimension } from "@minecraft/server";
-import { ItemUtil } from "../../lib/ItemUtil";
+import * as ItemUtil from "../../lib/ItemUtil";
 import { methodEventSub } from "../../lib/eventHelper";
 
 export class WildCropComponent implements BlockCustomComponent {
@@ -26,11 +26,10 @@ export class WildCropComponent implements BlockCustomComponent {
             const container = player.getComponent("inventory")?.container;
             if (!container) return;
             args.cancel = true
-            system.runTimeout(() => {
-                ItemUtil.damageItem(container, player.selectedSlotIndex)
+            system.run(() => {
+                ItemUtil.hurtItem(container, player.selectedSlotIndex)
                 ItemUtil.spawnItem(block, block.typeId)
                 block.dimension.runCommand(`/setblock ${x} ${y} ${z} air`)
-
             })
         }
     }
@@ -66,7 +65,7 @@ class WildRiceComponent implements BlockCustomComponent {
             const enchantable = container?.getItem(player.selectedSlotIndex)?.getComponent(ItemComponentTypes.Enchantable) as ItemEnchantableComponent
             const silkTouch = enchantable?.hasEnchantment("silk_touch");
             if (itemId == "minecraft:shears") {
-                ItemUtil.damageItem(container, player.selectedSlotIndex, 1)
+                ItemUtil.hurtItem(container, player.selectedSlotIndex, 1)
                 ItemUtil.spawnItem(block, lootItem)
 
             };
@@ -90,16 +89,12 @@ class WildRiceComponent implements BlockCustomComponent {
         if (upBlockId == "minecraft:water" || upBlockId != "minecraft:air") {
             args.cancel = true;
         }
-        else {
-            if (!player) return;
-            if (!container) return;
-            system.runTimeout(() => {
+        else if (player && container) {
+            system.run(() => {
                 world.structureManager.place("farmersdelight:wild_rice_no_water", dimension, block.location);
-                ItemUtil.clearItem(container, player.selectedSlotIndex, 1)
+                ItemUtil.takeItem(container, player.selectedSlotIndex, 1)
                 dimension.playSound("dig.grass", block.location)
             })
-
-
         }
     }
     onTick(args: BlockComponentTickEvent): void {

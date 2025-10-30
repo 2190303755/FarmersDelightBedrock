@@ -1,6 +1,6 @@
 import { ScoreboardObjective, world } from "@minecraft/server";
-import { SubscribeEvent } from "../lib/EventSubscriber";
-import { ReceieveMessageEvent, ScoreboardLoadEvent } from "../lib/Events";
+import { subscribeEvent } from "../lib/EventSubscriber";
+import { ReceiveMessageEvent, ScoreboardLoadEvent } from "../lib/Events";
 import {
     CUTTABLE_WITH_AXE_BLOCKS,
     CUTTABLE_WITH_KINFE_ITEMS,
@@ -10,10 +10,10 @@ import {
     CUTTABLE_WITH_PICKAXE_ITEMS,
     CUTTABLE_WITH_KNIFE_BLOCKS,
     CUTTABLE_WITH_SHOLVE_BLOCKS,
-} from "../data/recipe/Cuttables";
+} from "../data/Cuttables";
 
 export class CuttingBoardRegistry {
-    @SubscribeEvent(ScoreboardLoadEvent)
+    @subscribeEvent(ScoreboardLoadEvent)
     static loadRecipes(objectives: ScoreboardObjective[]) {
         for (const objective of objectives) {
             const match: RegExpMatchArray | null = objective.displayName.match(/farmersdelight_(\w+)/);
@@ -24,7 +24,7 @@ export class CuttingBoardRegistry {
             }
         }
     }
-    @SubscribeEvent(ReceieveMessageEvent, "farmersdelight:cutting_board_recipe")
+    @subscribeEvent(ReceiveMessageEvent, "farmersdelight:cutting_board_recipe")
     static registerCuttable(message: string) {
         try {
             const splited = message.split("?");

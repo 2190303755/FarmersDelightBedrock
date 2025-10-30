@@ -1,5 +1,5 @@
 import { BlockComponentPlayerInteractEvent, BlockCustomComponent, BlockComponentRandomTickEvent, StartupEvent, system, world, BlockVolume, BlockPermutation, EntityInventoryComponent, Vector3, Container, Player, Block } from "@minecraft/server";
-import { ItemUtil } from "../../lib/ItemUtil";
+import * as ItemUtil from "../../lib/ItemUtil";
 import { methodEventSub } from "../../lib/eventHelper";
 import type * as minecraftvanilladata from '@minecraft/vanilla-data';
 import { CropsComponentParams } from "./CropComponent";
@@ -12,7 +12,7 @@ function handlePlanting(seedId: string, crop: string, topLocation: Vector3, cont
     if (itemId == seedId) {
         player.dimension.playSound("dig.grass", block.location);
         block.dimension.setBlockType(topLocation, crop);
-        ItemUtil.clearItem(container, player.selectedSlotIndex);
+        ItemUtil.takeItem(container, player.selectedSlotIndex);
     }
     return
 }

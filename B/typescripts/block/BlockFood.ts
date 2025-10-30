@@ -1,6 +1,6 @@
 import { Block, Container, Dimension, EntityInventoryComponent, ItemStack, Player, PlayerBreakBlockBeforeEvent, PlayerInteractWithBlockAfterEvent, Vector3, system, world } from "@minecraft/server";
 import { methodEventSub } from "../lib/eventHelper";
-import { ItemUtil } from "../lib/ItemUtil";
+import * as ItemUtil from "../lib/ItemUtil";
 function spawnLoot(path: string, dimenion: Dimension, location: Vector3) {
     return dimenion.runCommand(`loot spawn ${location.x} ${location.y} ${location.z} loot "${path}"`)
 }
@@ -30,7 +30,7 @@ export class BlockFood {
                     if ((itemType == "tag" && itemStack.hasTag(itemId)) || (itemType == "item" && itemStack.typeId == itemId)) {
                         block.setPermutation(block.permutation.withState("farmersdelight:food_block_stage", Number(block.permutation.getState("farmersdelight:food_block_stage")) + 1));
                         spawnLoot(block.typeId.split(":")[0] + "/food_block/" + block.typeId.split(":")[1], block.dimension, { x: location.x + 0.5, y: location.y + 1, z: location.z + 0.5 });
-                        ItemUtil.clearItem(container, player.selectedSlotIndex)
+                        ItemUtil.takeItem(container, player.selectedSlotIndex)
 
                     }
                     else {
@@ -73,7 +73,7 @@ export class BlockFood {
                         block.dimension.spawnItem(new ItemStack(block.typeId + "_item"), block.location);
                         block.dimension.setBlockType({ x: location.x, y: location.y, z: location.z }, "minecraft:air")
                         player.playSound("dig.cloth")
-                        ItemUtil.damageItem(container, player.selectedSlotIndex)
+                        ItemUtil.hurtItem(container, player.selectedSlotIndex)
                     });
                 }
                 args.cancel = true;
@@ -91,7 +91,7 @@ export class BlockFood {
                     block.dimension.spawnItem(new ItemStack(block.typeId + "_item"), block.location);
                     block.dimension.setBlockType({ x: location.x, y: location.y, z: location.z }, "minecraft:air")
                     player.playSound("dig.cloth")
-                    ItemUtil.damageItem(container, player.selectedSlotIndex)
+                    ItemUtil.hurtItem(container, player.selectedSlotIndex)
                 });
             }
             args.cancel = true;

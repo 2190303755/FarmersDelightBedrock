@@ -1,5 +1,5 @@
 import { BlockComponentPlayerInteractEvent, BlockCustomComponent, EntityInventoryComponent,ItemEnchantableComponent, StartupEvent, system, world } from "@minecraft/server";
-import { ItemUtil } from "../../lib/ItemUtil";
+import * as ItemUtil from "../../lib/ItemUtil";
 import { methodEventSub } from "../../lib/eventHelper";
 
 class RichSoilComponent implements BlockCustomComponent {
@@ -28,18 +28,18 @@ class RichSoilComponent implements BlockCustomComponent {
                 if (itemId == "minecraft:sugar_cane") {
                     dimension.playSound("dig.grass", block.location)
                     dimension.setBlockType(topLocation, "farmersdelight:rich_soil_sugar_cane_bottom")
-                    ItemUtil.clearItem(container,player.selectedSlotIndex)
+                    ItemUtil.takeItem(container,player.selectedSlotIndex)
                 }
                 if (itemId == "minecraft:brown_mushroom") {
                     dimension.playSound("dig.grass", block.location)
                     dimension.setBlockType(topLocation, "farmersdelight:brown_mushroom_colony")
-                    ItemUtil.clearItem(container,player.selectedSlotIndex)
+                    ItemUtil.takeItem(container,player.selectedSlotIndex)
 
                 }
                 if (itemId == "minecraft:red_mushroom") {
                     dimension.playSound("dig.grass", block.location)
                     dimension.setBlockType(topLocation, "farmersdelight:red_mushroom_colony")
-                    ItemUtil.clearItem(container,player.selectedSlotIndex)
+                    ItemUtil.takeItem(container,player.selectedSlotIndex)
 
                 }
 
@@ -47,7 +47,7 @@ class RichSoilComponent implements BlockCustomComponent {
             if (hoeTag) {
                 dimension.setBlockType(block.location, "farmersdelight:rich_soil_farmland")
                 dimension.playSound("use.gravel", block.location)
-                ItemUtil.damageItem(container, player.selectedSlotIndex, 1)
+                ItemUtil.hurtItem(container, player.selectedSlotIndex, 1)
             }
 
         } catch (error) {

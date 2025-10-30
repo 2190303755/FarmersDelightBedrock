@@ -16,7 +16,7 @@ import {
 } from "@minecraft/server";
 import { BlockStateSuperset } from "@minecraft/vanilla-data";
 import { methodEventSub } from "../../lib/eventHelper";
-import { ItemUtil } from "../../lib/ItemUtil";
+import * as ItemUtil from "../../lib/ItemUtil";
 
 function spawnLoot(path: string, dimenion: Dimension, location: Vector3) {
     return dimenion.runCommand(`loot spawn ${location.x} ${location.y} ${location.z} loot "${path}"`);
@@ -58,7 +58,7 @@ class CropsComponent implements BlockCustomComponent {
             }
             if (random > 25) {
                 block.setPermutation(block.permutation.withState(params.state.name, age + 1));
-                ItemUtil.clearItem(container, player.selectedSlotIndex);
+                ItemUtil.takeItem(container, player.selectedSlotIndex);
             }
         } else {
             block.setPermutation(block.permutation.withState(params.state.name, params.state.age_after_harvest ?? 0));
@@ -103,7 +103,7 @@ class TorchflowerComponent implements BlockCustomComponent {
                     }
                     dimension.spawnParticle("minecraft:crop_growth_emitter", block.center());
                     if (!container) return;
-                    ItemUtil.clearItem(container, player?.selectedSlotIndex);
+                    ItemUtil.takeItem(container, player?.selectedSlotIndex);
                 }
 
                 dimension.playSound("item.bone_meal.use", block.location);
@@ -174,7 +174,7 @@ class SugarCaneComponent implements BlockCustomComponent {
                         dimension.spawnParticle("minecraft:crop_growth_emitter", block.center());
                         dimension.playSound("item.bone_meal.use", block.location);
                         if (!container) return;
-                        ItemUtil.clearItem(container, player?.selectedSlotIndex);
+                        ItemUtil.takeItem(container, player?.selectedSlotIndex);
                     }
                 }
                 if (block.typeId == "farmersdelight:rich_soil_sugar_cane_middle") {
@@ -183,7 +183,7 @@ class SugarCaneComponent implements BlockCustomComponent {
                         dimension.spawnParticle("minecraft:crop_growth_emitter", block.center());
                         dimension.playSound("item.bone_meal.use", block.location);
                         if (!container) return;
-                        ItemUtil.clearItem(container, player?.selectedSlotIndex);
+                        ItemUtil.takeItem(container, player?.selectedSlotIndex);
                     }
                 }
             }
@@ -277,7 +277,7 @@ class RiceComponent implements BlockCustomComponent {
                             z: block.location.z + 0.5,
                         });
                         if (!container) return;
-                        ItemUtil.clearItem(container, player?.selectedSlotIndex);
+                        ItemUtil.takeItem(container, player?.selectedSlotIndex);
                     }
                 }
             } catch (error) {}
@@ -304,7 +304,7 @@ class RiceComponent implements BlockCustomComponent {
                             z: block.location.z + 0.5,
                         });
                         if (!container) return;
-                        ItemUtil.clearItem(container, player?.selectedSlotIndex);
+                        ItemUtil.takeItem(container, player?.selectedSlotIndex);
                     }
                 }
                 if (growth == 3) {

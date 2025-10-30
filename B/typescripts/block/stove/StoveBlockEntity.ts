@@ -1,9 +1,8 @@
 import { Block, DataDrivenEntityTriggerAfterEvent, Entity, ItemStack, ScoreboardObjective, ScoreboardScoreInfo, Vector3, system, world } from "@minecraft/server";
 import { methodEventSub } from "../../lib/eventHelper";
 import { BlockEntity } from "../../lib/BlockEntity";
-import { ItemUtil } from "../../lib/ItemUtil";
+import * as ItemUtil from "../../lib/ItemUtil";
 import { CookableComponentParams } from "../../customComponents/item/CookableComponent";
-import { heatConductors, heatSources } from "../../data/heatBlocks";
 
 const xOffset = 0.3;
 const yOffset = 0.2;
@@ -88,21 +87,12 @@ export class StoveBlockEntity extends BlockEntity {
                     }
                     entity.setDynamicProperty(`farmersdelight:item_${i}_time`, 0);
                     entity.setDynamicProperty(`farmersdelight:item_${i}_max_time`, 0);
-                    ItemUtil.clearItem(stoveContainer, i)
+                    ItemUtil.takeItem(stoveContainer, i)
                 }
             }
             if (emptySlotsCount != 6 && (system.currentTick % 20 == 0) && work) {
                 dimension.playSound("block.campfire.crackle", { x, y, z })
             }
         }
-    }
-    static heatCheck(block: Block) {
-        const blockBelow = block.below()
-        if (heatSources.includes(blockBelow?.typeId as string) || blockBelow?.hasTag('farmersdelight:heat_source')) return true
-        if (heatConductors.includes(blockBelow?.typeId as string) || blockBelow?.hasTag('farmersdelight:heat_conductors')) {
-            const blockBelow2 = block.below(2)
-            if (heatSources.includes(blockBelow2?.typeId as string) || blockBelow2?.hasTag('farmersdelight:heat_source')) return true
-        }
-        return false
     }
 }

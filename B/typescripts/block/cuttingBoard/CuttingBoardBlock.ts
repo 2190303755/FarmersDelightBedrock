@@ -23,8 +23,8 @@ import {
     CUTTABLE_WITH_AXE_ITEMS,
     CUTTABLE_WITH_KINFE_ITEMS,
     CUTTABLE_WITH_SHEARS_ITEMS,
-} from "../../data/recipe/Cuttables";
-import { ItemUtil } from "../../lib/ItemUtil";
+} from "../../data/Cuttables";
+import * as ItemUtil from "../../lib/ItemUtil";
 import { CuttingBroadComponentParams } from "../../customComponents/item/CuttableComponent";
 
 const toolMapping = [
@@ -102,8 +102,8 @@ export class CuttingBoardBlock extends BlockWithEntity {
                             item.applyImpulse(offset);
                         }
                         if (EntityUtil.hasLimitedMaterials(player)) {
-                            ItemUtil.clearOffhandItem(player);
-                            ItemUtil.damageItem(container, player.selectedSlotIndex);
+                            ItemUtil.takeOffhandItem(player);
+                            ItemUtil.hurtItem(container, player.selectedSlotIndex);
                         }
                         return;
                     } else player.onScreenDisplay.setActionBar({ translate: "farmersdelight.tips.false_tool" });
@@ -118,8 +118,8 @@ export class CuttingBoardBlock extends BlockWithEntity {
                                 `loot spawn ${entity.location.x} ${entity.location.y} ${entity.location.z} loot "${namespace}/cutting_board/${id}"`
                             );
                             if (EntityUtil.hasLimitedMaterials(player)) {
-                                ItemUtil.clearOffhandItem(player);
-                                ItemUtil.damageItem(container, player.selectedSlotIndex);
+                                ItemUtil.takeOffhandItem(player);
+                                ItemUtil.hurtItem(container, player.selectedSlotIndex);
                             }
                             return;
                         }
@@ -161,7 +161,7 @@ export class CuttingBoardBlock extends BlockWithEntity {
                         return;
                     }
                 }
-                if (EntityUtil.hasLimitedMaterials(player)) ItemUtil.clearOffhandItem(player);
+                if (EntityUtil.hasLimitedMaterials(player)) ItemUtil.takeOffhandItem(player);
             }
         }
         if (!offHand && mainHand && itemId == "undefined") {
@@ -177,7 +177,7 @@ export class CuttingBoardBlock extends BlockWithEntity {
                 if (params.is_block) {
                     entity.runCommand(`replaceitem entity @s slot.weapon.mainhand 0 ${mainHand.typeId}`);
                 }
-                if (EntityUtil.hasLimitedMaterials(player)) ItemUtil.clearItem(container, player.selectedSlotIndex);
+                if (EntityUtil.hasLimitedMaterials(player)) ItemUtil.takeItem(container, player.selectedSlotIndex);
             } else {
                 for (const tool of toolMapping) {
                     if (tool.list.has(mainHand.typeId)) {
@@ -194,7 +194,7 @@ export class CuttingBoardBlock extends BlockWithEntity {
                             entity.runCommand(`replaceitem entity @s slot.weapon.mainhand 0 ${mainHand.typeId}`);
                         }
                         if (EntityUtil.hasLimitedMaterials(player))
-                            ItemUtil.clearItem(container, player.selectedSlotIndex);
+                            ItemUtil.takeItem(container, player.selectedSlotIndex);
                         return;
                     } else {
                         player.onScreenDisplay.setActionBar({ translate: "farmersdelight.tips.cant_cut" });
@@ -224,7 +224,7 @@ export class CuttingBoardBlock extends BlockWithEntity {
                         item.applyImpulse(offset);
                     }
                     if (EntityUtil.hasLimitedMaterials(player))
-                        ItemUtil.damageItem(container, player.selectedSlotIndex);
+                        ItemUtil.hurtItem(container, player.selectedSlotIndex);
                 } else {
                     const [namespace, id] = itemId.split(":");
                     entity.runCommand(
@@ -234,12 +234,12 @@ export class CuttingBoardBlock extends BlockWithEntity {
                     entity.setDynamicProperty("farmersdelight:blockEntityItemStackData", '{"item":"undefined"}');
                     entity.runCommand(`replaceitem entity @s slot.weapon.mainhand 0 air`);
                     if (EntityUtil.hasLimitedMaterials(player))
-                        ItemUtil.damageItem(container, player.selectedSlotIndex);
+                        ItemUtil.hurtItem(container, player.selectedSlotIndex);
                 }
                 entity.dimension.playSound(`block.farmersdelight.cutting_board`, entity.location);
             } else player.onScreenDisplay.setActionBar({ translate: "farmersdelight.tips.false_tool" });
         }
-        if ((offHand || !offHand) && !mainHand && itemId != "undefined") {
+        if (!mainHand && itemId != "undefined") {
             entity.setDynamicProperty("farmersdelight:cutTool", undefined);
             entity.setDynamicProperty("farmersdelight:blockEntityItemStackData", '{"item":"undefined"}');
             entity.runCommand(`replaceitem entity @s slot.weapon.mainhand 0 air`);

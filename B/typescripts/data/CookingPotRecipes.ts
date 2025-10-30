@@ -1,4 +1,4 @@
-import { CookingPotRecipe } from "../../lib/CookingPotRecipe";
+import { CookingPotRecipe } from "../lib/CookingPotRecipe";
 
 export const COOKING_POT_RECIPES: CookingPotRecipe[] = [
     //finish

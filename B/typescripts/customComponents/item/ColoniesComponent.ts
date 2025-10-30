@@ -1,7 +1,7 @@
 import { BlockPermutation, Container, Direction, EntityInventoryComponent, ItemComponentUseOnEvent, ItemCustomComponent, Player, system, StartupEvent } from "@minecraft/server";
 import { methodEventSub } from "../../lib/eventHelper";
-import { EntityUtil } from "../../lib/EntityUtil";
-import { ItemUtil } from "../../lib/ItemUtil";
+import * as EntityUtil from "../../lib/EntityUtil";
+import * as ItemUtil from "../../lib/ItemUtil";
 
 class ColoniesComonent implements ItemCustomComponent{
     constructor() {
@@ -23,7 +23,7 @@ class ColoniesComonent implements ItemCustomComponent{
         
         const inventory = player?.getComponent("inventory") as EntityInventoryComponent;
         const container: Container = inventory?.container as Container
-        if (EntityUtil.gameMode(player)) ItemUtil.clearItem(container, player.selectedSlotIndex);
+        if (EntityUtil.hasLimitedMaterials(player)) ItemUtil.takeItem(container, player.selectedSlotIndex);
     }
 
 }

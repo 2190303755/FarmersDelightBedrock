@@ -3,21 +3,20 @@ import { methodEventSub } from "../../lib/eventHelper";
 import { BlockWithEntity } from "../../lib/BlockWithEntity";
 
 
-//potItem用于放置厨锅时暂时存储厨锅物品数据，方便读取lore
-//别问我为啥不写类里面，因为写类里面的时候在constructor里还是正常的map，一到事件里就莫名其妙变成了undefined，ts也没报错，查不出来原因
-let potItem = new Map();
+//usedItem用于放置厨锅时暂时存储厨锅物品数据，方便读取lore
+const usedItem = new Map();
 
 export class CookingPotBlock extends BlockWithEntity {
     @methodEventSub(world.beforeEvents.playerInteractWithBlock)
     beforePlaceBlock(args: PlayerInteractWithBlockBeforeEvent){
-        potItem.set(args.player.id, args.itemStack);
+        usedItem.set(args.player.id, args.itemStack);
     }
 
     @methodEventSub(world.afterEvents.playerPlaceBlock)
     placeBlock(args: PlayerPlaceBlockAfterEvent) {
-        const itemStack = potItem.get(args.player.id) as ItemStack;
         const block: Block = args.block;
         if (block.typeId != "farmersdelight:cooking_pot") return;
+        const itemStack = usedItem.get(args.player.id) as ItemStack;
         const lores: string[] = itemStack.getLore() ?? [];
         const { x, y, z }: Vector3 = block.location;
         const entity: Entity = super.setBlock(block.dimension, { x: x + 0.5, y: y, z: z + 0.5 }, "farmersdelight:cooking_pot");
@@ -39,10 +38,9 @@ export class CookingPotBlock extends BlockWithEntity {
     @methodEventSub(world.beforeEvents.playerBreakBlock, { blockTypes: ["farmersdelight:cooking_pot"] })
     breakBlock(args: any) {
         const block: Block = args.block;
-        const location: Vector3 = block.location;
         args.cancel = true;
         system.run(() => {
-            block.dimension.setBlockType(location, "minecraft:air");
+            block.setType("minecraft:air");
         })
     }
 }

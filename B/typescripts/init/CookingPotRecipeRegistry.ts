@@ -1,10 +1,10 @@
 import { ScoreboardObjective, world } from "@minecraft/server";
-import { SubscribeEvent } from "../lib/EventSubscriber";
-import { ReceieveMessageEvent, ScoreboardLoadEvent } from "../lib/Events";
-import { COOKING_POT_RECIPES } from "../data/recipe/cookingPotRecipe";
+import { subscribeEvent } from "../lib/EventSubscriber";
+import { ReceiveMessageEvent, ScoreboardLoadEvent } from "../lib/Events";
+import { COOKING_POT_RECIPES } from "../data/CookingPotRecipes";
 
 class CookingPotRecipeRegistry {
-    @SubscribeEvent(ScoreboardLoadEvent)
+    @subscribeEvent(ScoreboardLoadEvent)
     static loadRecipes(objectives: ScoreboardObjective[]) {
         for (const objective of objectives) {
             const match: RegExpMatchArray | null = objective.displayName.match(/farmersdelight_(\w+)/);
@@ -15,7 +15,7 @@ class CookingPotRecipeRegistry {
             }
         }
     }
-    @SubscribeEvent(ReceieveMessageEvent, "farmersdelight:cooking_pot_recipe")
+    @subscribeEvent(ReceiveMessageEvent, "farmersdelight:cooking_pot_recipe")
     static registerRecipe(message: string) {
         try {
             const json: any = JSON.parse(message);

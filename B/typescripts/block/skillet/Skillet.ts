@@ -1,13 +1,11 @@
 import { Block, Container, ContainerSlot, Dimension, Entity, EntityDamageCause, EntityEquippableComponent, EntityInventoryComponent, EquipmentSlot, ItemStack, Player, PlayerInteractWithBlockAfterEvent, PlayerPlaceBlockAfterEvent, ScoreboardObjective, ScoreboardScoreInfo, Vector3, world } from "@minecraft/server";
 import { methodEventSub } from "../../lib/eventHelper";
 import { BlockWithEntity } from "../../lib/BlockWithEntity";
-import { SMELTABLES } from "../../data/recipe/Smeltables";
-import { EntityUtil } from "../../lib/EntityUtil";
-import { ItemUtil } from "../../lib/ItemUtil";
-import { BlockEntity } from "../../lib/BlockEntity";
-
-import { heatConductors, heatSources } from "../../data/heatBlocks";
-import { CookableComonentRegister, CookableComponentParams } from "../../customComponents/item/CookableComponent";
+import { SMELTABLES } from "../../data/Smeltables";
+import * as EntityUtil from "../../lib/EntityUtil";
+import * as ItemUtil from "../../lib/ItemUtil";
+import { CookableComponentParams } from "../../customComponents/item/CookableComponent";
+import { HEAT_CONDUCTORS, HEAT_SOURCES, isHeated } from "../../data/Heaters";
 
 export class Skillet extends BlockWithEntity {
   @methodEventSub(world.afterEvents.playerPlaceBlock)
@@ -70,7 +68,7 @@ export class Skillet extends BlockWithEntity {
         entity.setDynamicProperty("farmersdelight:canAdd", itemStack.maxAmount - amount);
         entity.setDynamicProperty("farmersdelight:amount", amount);
         entity.setDynamicProperty("farmersdelight:cookData", JSON.stringify({ datas: [{ count: amount, time: time }] }));
-        if (EntityUtil.gameMode(player)) ItemUtil.clearItem(container, player.selectedSlotIndex, amount);
+        if (EntityUtil.hasLimitedMaterials(player)) ItemUtil.takeItem(container, player.selectedSlotIndex, amount);
       }
 
       else if (itemId == currentItem) {
@@ -80,34 +78,23 @@ export class Skillet extends BlockWithEntity {
           entity.setDynamicProperty("farmersdelight:cookData", JSON.stringify(cookData));
           entity.setDynamicProperty("farmersdelight:amount", totalAmount+amount);
 
-          if (EntityUtil.gameMode(player)) ItemUtil.clearItem(container, player.selectedSlotIndex, amount);
+          if (EntityUtil.hasLimitedMaterials(player)) ItemUtil.takeItem(container, player.selectedSlotIndex, amount);
         }
         if (canAddAmount - amount < 0 && canAddAmount != 0) {
           cookData.datas.push({ count: canAddAmount, time: time });
           entity.setDynamicProperty("farmersdelight:canAdd", 0);
           entity.setDynamicProperty("farmersdelight:amount", 64);
           entity.setDynamicProperty("farmersdelight:cookData", JSON.stringify(cookData));
-          if (EntityUtil.gameMode(player)) ItemUtil.clearItem(container, player.selectedSlotIndex, canAddAmount);
+          if (EntityUtil.hasLimitedMaterials(player)) ItemUtil.takeItem(container, player.selectedSlotIndex, canAddAmount);
         }
       }
       
-      if (Skillet.heatCheck(args.block) && canAddAmount > 0) {
+      if (isHeated(args.block) && canAddAmount > 0) {
         entity.dimension.playSound("block.farmersdelight.skillet.add_food",entity.location);
       }
     } 
     else {
       player.onScreenDisplay.setActionBar({ translate: "farmersdelight.skillet.invalid_item" });
     }
-  }
-
-
-  static heatCheck(block: Block) {
-    const blockBelow = block.below()
-    if (heatSources.includes(blockBelow?.typeId as string) || blockBelow?.hasTag('farmersdelight:heat_source')) return true
-    if (heatConductors.includes(blockBelow?.typeId as string) || blockBelow?.hasTag('farmersdelight:heat_conductors')) {
-      const blockBelow2 = block.below(2)
-      if (heatSources.includes(blockBelow2?.typeId as string) || blockBelow2?.hasTag('farmersdelight:heat_source')) return true
-    }
-    return false
   }
 }

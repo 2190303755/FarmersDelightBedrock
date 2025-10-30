@@ -1,7 +1,7 @@
 import { Entity, ItemStack, system, world } from "@minecraft/server";
 import { RecipeHolder } from "./RecipeHolder";
-import { ItemUtil } from "./ItemUtil";
-import { StackIngredient, Ingredient } from "../lib/Ingredient";
+import * as ItemUtil from "./ItemUtil";
+import { StackIngredient, Ingredient } from "./Ingredient";
 
 export interface CookingPotRecipe {
     identifier: string;
@@ -39,15 +39,15 @@ export class CookingPotRecipeHolder extends RecipeHolder {
                     //若菜品不需要容器
                     if (!this.currentRecipe2.container) {
                         if (result && this.setItem(itemStack, 8)) {
-                            ItemUtil.clearItem(this.container, 6);
+                            ItemUtil.takeItem(this.container, 6);
                             this.currentRecipe2 = false
                         }
                     }
                     //若容器栏容器正确
                     else if (container && this.isIngredient(container, this.currentRecipe2.container)) {
                         if (this.setItem(itemStack, 8)) {
-                            ItemUtil.clearItem(this.container, 6);
-                            ItemUtil.clearItem(this.container, 7);
+                            ItemUtil.takeItem(this.container, 6);
+                            ItemUtil.takeItem(this.container, 7);
                             this.currentRecipe2 = false
                         }
                     }
@@ -109,8 +109,6 @@ export class CookingPotRecipeHolder extends RecipeHolder {
             this.container.setItem(index, itemStack);
             return true;
         }
-
-        console.warn(output.amount)
         return false;
     }
     private getValidRecipe2(output: ItemStack, container: ItemStack | undefined) {

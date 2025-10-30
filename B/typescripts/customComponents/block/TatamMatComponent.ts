@@ -1,6 +1,6 @@
 import { Block, BlockComponentTickEvent, BlockCustomComponent, BlockComponentPlayerPlaceBeforeEvent, BlockPermutation, Container, Direction, system, EntityInventoryComponent, world, StartupEvent } from "@minecraft/server";
-import { EntityUtil } from "../../lib/EntityUtil";
-import { ItemUtil } from "../../lib/ItemUtil";
+import * as EntityUtil from "../../lib/EntityUtil";
+import * as ItemUtil from "../../lib/ItemUtil";
 import { methodEventSub } from "../../lib/eventHelper";
 
 class TatamMatComponent implements BlockCustomComponent {
@@ -46,7 +46,7 @@ class TatamMatComponent implements BlockCustomComponent {
             
             block?.setPermutation(mainPerm);
             other?.setPermutation(otherPerm);
-            if (EntityUtil.gameMode(player)) ItemUtil.clearItem(container, player.selectedSlotIndex);
+            if (EntityUtil.hasLimitedMaterials(player)) ItemUtil.takeItem(container, player.selectedSlotIndex);
         })
     }
 

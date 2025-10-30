@@ -1,8 +1,8 @@
 import { Block, Entity, ItemStack, ScoreboardObjective, Vector3, system, world } from "@minecraft/server";
 import { methodEventSub } from "../../lib/eventHelper";
 import { BlockEntity } from "../../lib/BlockEntity";
-import { heatConductors, heatSources } from "../../data/heatBlocks";
 import { CookableComponentParams } from "../../customComponents/item/CookableComponent";
+import { isHeated } from "../../data/Heaters";
 
 const skilletV2: any[] = [];
 for (let i = 0; i < 5; i++) {
@@ -10,17 +10,6 @@ for (let i = 0; i < 5; i++) {
   json.x = (Math.random() * 2 - 1) * 0.15 * 0.5;
   json.z = (Math.random() * 2 - 1) * 0.15 * 0.5;
   skilletV2.push(json);
-}
-
-//检查热源
-function heatCheck(block: Block) {
-  const blockBelow = block.below()
-  if (heatSources.includes(blockBelow?.typeId as string) || blockBelow?.hasTag('farmersdelight:heat_source')) return true
-  if (heatConductors.includes(blockBelow?.typeId as string) || blockBelow?.hasTag('farmersdelight:heat_conductors')) {
-    const blockBelow2 = block.below(2)
-    if (heatSources.includes(blockBelow2?.typeId as string) || blockBelow2?.hasTag('farmersdelight:heat_source')) return true
-  }
-  return false
 }
 
 export class SkilletEntity extends BlockEntity {
@@ -43,7 +32,7 @@ export class SkilletEntity extends BlockEntity {
       dimension.spawnParticle(particleName, { x: x + skilletV2[index].x, y: y + 0.07 + 0.03 * (index + 1), z: z + skilletV2[index].z });
     }
     // 烹饪
-    if (!heatCheck(entityBlockData.block)) return;
+    if (!isHeated(entityBlockData.block)) return;
     const cookDataProperty = entity.getDynamicProperty("farmersdelight:cookData") as string || "{}"
     if (cookDataProperty == "{}") return
     let cookData = JSON.parse(cookDataProperty);

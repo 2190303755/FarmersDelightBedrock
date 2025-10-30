@@ -1,7 +1,7 @@
 import { Player, ScoreboardObjective, world, system } from "@minecraft/server";
 import { MESSAGE_HANDLERS } from "./MessageDispatcher";
 export const TickEvent = {
-    subscribe(callback: () => void) {
+    subscribe(callback: (_: void) => void) {
         system.runInterval(callback);
     },
 } as const;
@@ -16,7 +16,7 @@ export const PlayerTickEvent = {
     },
 } as const;
 
-export const ReceieveMessageEvent = {
+export const ReceiveMessageEvent = {
     subscribe(callback: (message: string) => void, identifier: string) {
         MESSAGE_HANDLERS.set(identifier, callback);
     },

@@ -12,22 +12,9 @@ import {
 import { methodEventSub } from "../../lib/eventHelper";
 import { BlockEntity, BlockEntityData } from "../../lib/BlockEntity";
 import * as ObjectUtil from "../../lib/ObjectUtil";
-import { COOKING_POT_RECIPES } from "../../data/recipe/cookingPotRecipe";
+import { COOKING_POT_RECIPES } from "../../data/CookingPotRecipes";
 import { CookingPotRecipeHolder } from "../../lib/CookingPotRecipe";
-import { heatConductors, heatSources } from "../../data/heatBlocks";
-import { StackIngredient, Ingredient } from "../../lib/Ingredient";
-
-export interface CookingPotRecipe {
-    identifier: string;
-    recipe_book_tab?: string;
-    tags: string[];
-    priority: number;
-    time: number;
-    container?: Ingredient;
-    experience?: number;
-    ingredients: Ingredient[];
-    result: StackIngredient;
-}
+import { HEAT_CONDUCTORS, HEAT_SOURCES, isHeated } from "../../data/Heaters";
 
 const recipeFactory: Map<string, CookingPotRecipeHolder> = new Map();
 
@@ -39,21 +26,6 @@ function arrowheadUtil(entity: Entity, oldItemStack: ItemStack, slot: number, co
         container.setItem(slot, oldItemStack);
     }
 }
-
-//检查热源  自定义热源可以使用farmersdelight:heat_source的tag进行定义
-function heatCheck(block: Block) {
-    const blockBelow = block.below();
-    if (heatSources.includes(blockBelow?.typeId as string) || blockBelow?.hasTag("farmersdelight:heat_source"))
-        return true;
-    if (heatConductors.includes(blockBelow?.typeId as string) || blockBelow?.hasTag("farmersdelight:heat_conductors")) {
-        const blockBelow2 = block.below(2);
-        if (heatSources.includes(blockBelow2?.typeId as string) || blockBelow2?.hasTag("farmersdelight:heat_source"))
-            return true;
-    }
-    return false;
-}
-
-world.afterEvents.pistonActivate;
 
 //刷新方块实体状态以及防TP
 function blockEntityLoot(args: BlockEntityData, id: string) {
@@ -109,7 +81,7 @@ export class CookingPotBlockEntity extends BlockEntity {
         const map: Map<string, number> = new Map();
         const progress: number = (entity.getDynamicProperty("farmersdelight:cooking_pot_progress") as number) ?? 0;
         //热源检测
-        const heated = heatCheck(block);
+        const heated = isHeated(block);
         //配方管理器初始化, 每tick更新一次
         let cookingPotRecipe;
         if (!recipeFactory.get(entity.id)) {

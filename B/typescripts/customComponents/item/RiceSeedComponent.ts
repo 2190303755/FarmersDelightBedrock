@@ -1,7 +1,7 @@
 import { BlockCustomComponent, ItemComponentUseOnEvent, StartupEvent, world, Dimension, Vector3, ItemCustomComponentAlreadyRegisteredError, ItemCustomComponent, Direction, Container, system, Player, EntityInventoryComponent } from "@minecraft/server";
 import { methodEventSub } from "../../lib/eventHelper";
-import { ItemUtil } from "../../lib/ItemUtil";
-import { EntityUtil } from "../../lib/EntityUtil";
+import * as ItemUtil from "../../lib/ItemUtil";
+import * as EntityUtil from "../../lib/EntityUtil";
 function placeStructure(dimension: Dimension, structure: string, location: Vector3) {
     dimension.runCommand(`structure load ${structure} ${location.x} ${location.y} ${location.z}`)
 }
@@ -22,7 +22,7 @@ class RiceSeedComponent implements ItemCustomComponent {
                 block.dimension.setBlockType(water.location,"farmersdelight:rice_block")
                 const inventory = source?.getComponent("inventory") as EntityInventoryComponent;
                 const container: Container = inventory?.container as Container
-                if (EntityUtil.gameMode(source)) ItemUtil.clearItem(container, source.selectedSlotIndex)
+                if (EntityUtil.hasLimitedMaterials(source)) ItemUtil.takeItem(container, source.selectedSlotIndex)
             })
         }
 

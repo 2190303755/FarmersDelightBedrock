@@ -23,8 +23,8 @@ import {
     world,
 } from "@minecraft/server";
 import { methodEventSub } from "../lib/eventHelper";
-import { EntityUtil } from "../lib/EntityUtil";
-import { ItemUtil } from "../lib/ItemUtil";
+import * as EntityUtil from "../lib/EntityUtil";
+import * as ItemUtil from "../lib/ItemUtil";
 
 function spawnLoot(path: string, dimenion: Dimension, location: Vector3) {
     return dimenion.runCommand(`loot spawn ${location.x} ${location.y} ${location.z} loot "${path}"`);
@@ -129,11 +129,11 @@ export class Knife {
         const blockTypeId: string = args.brokenBlockPermutation.type.id;
         // 使用刀组件的物品已经处理了掉落物
         if (!itemStack || !itemStack.hasTag("farmersdelight:is_knife") || itemStack.hasComponent("farmersdelight:knife")) return;
-        if (EntityUtil.gameMode(player)) {
+        if (EntityUtil.hasLimitedMaterials(player)) {
             const inventory = player?.getComponent("inventory") as EntityInventoryComponent;
             const container = inventory?.container as Container;
             if (!container) return;
-            ItemUtil.damageItem(container, player.selectedSlotIndex);
+            ItemUtil.hurtItem(container, player.selectedSlotIndex);
             if (blockTypeId == "minecraft:tallgrass") {
                 spawnLoot("farmersdelight/straw_from_grass", block.dimension, block.location);
             } else if (blockTypeId == "minecraft:short_grass" || blockTypeId == "minecraft:fern") {
@@ -177,15 +177,4 @@ export class Knife {
             }
         });
     }
-
-    /* @methodEventSub(world.afterEvents.dataDrivenEntityTrigger, { entityTypes: ["minecraft:item"], eventTypes: ["minecraft:item_tick"] })
-     tick(args: any) {
-         const entity = args.entity as Entity
-         const itemComp = entity.getComponent('minecraft:item')
-         const typeId = itemComp?.itemStack.typeId
-         if (typeId != "farmersdelight:netherite_knife") return
-         entity.triggerEvent("minecraft:fire_resistance")
-         console.warn(entity.getComponent('minecraft:health')?.currentValue);
-
-     }*/
 }

@@ -1,8 +1,8 @@
 import { BlockComponentPlayerInteractEvent, BlockComponentRandomTickEvent, BlockCustomComponent, BlockComponentPlayerBreakEvent,Dimension, Vector3, world, EntityInventoryComponent, ItemStack, system, StartupEvent } from "@minecraft/server";
 import { RandomUtil } from "../../lib/RandomUtil";
-import { ItemUtil } from "../../lib/ItemUtil";
+import * as ItemUtil from "../../lib/ItemUtil";
 import { methodEventSub } from "../../lib/eventHelper";
-import { EntityUtil } from "../../lib/EntityUtil";
+import * as EntityUtil from "../../lib/EntityUtil";
 function spawnLoot(path: string, dimenion: Dimension, location: Vector3) {
     return dimenion.runCommand(`loot spawn ${location.x} ${location.y} ${location.z} loot "${path}"`)
 }
@@ -39,7 +39,7 @@ class MushroomColonyComonent implements BlockCustomComponent {
             }
             dimension.spawnParticle("minecraft:crop_growth_emitter",block.center())
             dimension.playSound("item.bone_meal.use",block.center())
-            ItemUtil.clearItem(container,player.selectedSlotIndex)
+            ItemUtil.hurtItem(container,player.selectedSlotIndex)
         }
         if(itemId=="minecraft:shears"&&growth>0){
             block.setPermutation(block.permutation.withState('farmersdelight:growth', growth - 1));
@@ -49,7 +49,7 @@ class MushroomColonyComonent implements BlockCustomComponent {
             if (block.typeId=="farmersdelight:red_mushroom_colony"){
                 spawnLoot("farmersdelight/crops/farmersdelight_red_mushroom_colony0",dimension,block.center())
             };
-            ItemUtil.damageItem(container,player.selectedSlotIndex)
+            ItemUtil.hurtItem(container,player.selectedSlotIndex)
             dimension.playSound("mob.sheep.shear",block.center())
         }
 
@@ -63,7 +63,7 @@ class MushroomColonyComonent implements BlockCustomComponent {
         if (!player) return
         if (!container) return;
         const selectedSlot = container?.getSlot(player.selectedSlotIndex)
-        if ((blockId != 'farmersdelight:brown_mushroom_colony' && blockId != 'farmersdelight:red_mushroom_colony') || !EntityUtil.gameMode(player)) return
+        if ((blockId != 'farmersdelight:brown_mushroom_colony' && blockId != 'farmersdelight:red_mushroom_colony') || !EntityUtil.hasLimitedMaterials(player)) return
         const growth = brokenPerm.getState('farmersdelight:growth') as number;
         try {
             const itemId = selectedSlot?.typeId;
@@ -73,7 +73,7 @@ class MushroomColonyComonent implements BlockCustomComponent {
                 const invComp = player.getComponent(EntityInventoryComponent.componentId) as EntityInventoryComponent
                 const container = invComp?.container
                 if (!container) return
-                ItemUtil.damageItem(container, player.selectedSlotIndex)
+                ItemUtil.hurtItem(container, player.selectedSlotIndex)
             }
             else{
                 spawnLoot(`farmersdelight/crops/farmersdelight_${blockId.split(':')[1]}${growth}`, player.dimension, {x:x + 0.5, y, z:z + 0.5})

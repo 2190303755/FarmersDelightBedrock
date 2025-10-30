@@ -1,9 +1,9 @@
 import { Block, Container, Entity, ItemStack, PlayerInteractWithBlockAfterEvent, Player, PlayerPlaceBlockAfterEvent, Vector3, world } from "@minecraft/server";
 import { methodEventSub } from "../../lib/eventHelper";
 import { BlockWithEntity } from "../../lib/BlockWithEntity";
-import { SMELTABLES } from "../../data/recipe/Smeltables";
-import { EntityUtil } from "../../lib/EntityUtil";
-import { ItemUtil } from "../../lib/ItemUtil";
+import { SMELTABLES } from "../../data/Smeltables";
+import * as EntityUtil from "../../lib/EntityUtil";
+import * as ItemUtil from "../../lib/ItemUtil";
 import { CookableComponentParams } from "../../customComponents/item/CookableComponent";
 
 
@@ -44,7 +44,7 @@ export class StoveBlock extends BlockWithEntity {
                 const stoveitemStack = stoveContainer.getItem(i)
                 if (stoveitemStack) {
                     entity.dimension.spawnItem(stoveitemStack, { x, y: y + 1.4, z })
-                    ItemUtil.clearItem(stoveContainer, i)
+                    ItemUtil.takeItem(stoveContainer, i)
                     return
                 }
             }
@@ -64,7 +64,7 @@ export class StoveBlock extends BlockWithEntity {
             if (stoveContainer?.getItem(i) == undefined) {
                 stoveContainer?.setItem(i, itemStack)
                 entity.setDynamicProperty(`farmersdelight:item_${i}_max_time`, maxTime);
-                if (EntityUtil.gameMode(player)) ItemUtil.clearItem(container, player.selectedSlotIndex);
+                if (EntityUtil.hasLimitedMaterials(player)) ItemUtil.takeItem(container, player.selectedSlotIndex);
                 return
             }
         }

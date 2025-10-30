@@ -1,7 +1,7 @@
 import { Container, EntityHealthComponent, EntityInventoryComponent, ItemStack, Player, PlayerInteractWithEntityBeforeEvent, system, world } from "@minecraft/server";
 import { methodEventSub } from "../lib/eventHelper";
-import { ItemUtil } from "../lib/ItemUtil";
-import { EntityUtil } from "../lib/EntityUtil";
+import * as ItemUtil from "../lib/ItemUtil";
+import * as EntityUtil from "../lib/EntityUtil";
 
 
 export class Food {
@@ -94,7 +94,7 @@ export class Food {
                 args.cancel = true;
                 system.run(() => {
                     
-                    if (EntityUtil.gameMode(player)) ItemUtil.clearItem(container, player.selectedSlotIndex);
+                    if (EntityUtil.hasLimitedMaterials(player)) ItemUtil.takeItem(container, player.selectedSlotIndex);
                     target.addEffect('speed', 6000);
                     target.addEffect('strength', 6000);
                     target.addEffect('resistance', 6000);
@@ -104,7 +104,7 @@ export class Food {
                 if (!horseFeedTargets.includes(target.typeId)) return
                 args.cancel = true;
                 system.run(() => {
-                    if (EntityUtil.gameMode(player)) ItemUtil.clearItem(container, player.selectedSlotIndex);
+                    if (EntityUtil.hasLimitedMaterials(player)) ItemUtil.takeItem(container, player.selectedSlotIndex);
                     const healthComp = target.getComponent('health') as EntityHealthComponent;
                     healthComp?.resetToMaxValue();
                     target.addEffect('speed', 6000, {amplifier: 1});

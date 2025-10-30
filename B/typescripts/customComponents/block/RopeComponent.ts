@@ -1,6 +1,6 @@
 import { BlockCustomComponent, BlockComponentTickEvent, system, world, BlockComponentRandomTickEvent, BlockComponentPlayerInteractEvent, ItemComponentTypes, BlockComponentPlayerBreakEvent, EntityInventoryComponent, Dimension, Vector3, ItemEnchantableComponent, GameMode, StartupEvent } from "@minecraft/server";
 import { methodEventSub } from "../../lib/eventHelper";
-import { ItemUtil } from "../../lib/ItemUtil";
+import * as ItemUtil from "../../lib/ItemUtil";
 import type * as minecraftvanilladata from '@minecraft/vanilla-data';
 function spawnLoot(path: string, dimenion: Dimension, location: Vector3) {
     return dimenion.runCommand(`loot spawn ${location.x} ${location.y} ${location.z} loot "${path}"`)
@@ -36,7 +36,7 @@ export class RopeComponent implements BlockCustomComponent {
                     }
                     block.dimension.spawnParticle("minecraft:crop_growth_emitter", { x: block.location.x + 0.5, y: block.location.y + 0.5, z: block.location.z + 0.5 });
                     if (!container) return;
-                    ItemUtil.clearItem(container, player?.selectedSlotIndex)
+                    ItemUtil.takeItem(container, player?.selectedSlotIndex)
                 }
 
             }

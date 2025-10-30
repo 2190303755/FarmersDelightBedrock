@@ -1,7 +1,7 @@
 import { BlockCustomComponent, BlockComponentRandomTickEvent, world, StartupEvent, system, BlockPermutation, BlockVolume, BlockComponentPlayerPlaceBeforeEvent, BlockComponentPlayerInteractEvent, EntityInventoryComponent } from "@minecraft/server";
 import { methodEventSub } from "../../lib/eventHelper"
-import { organicCompostDetectList } from "../../data/organicCompostDetect";
-import { ItemUtil } from "../../lib/ItemUtil";
+import { COMPOSTABLES } from "../../data/Compostables";
+import * as ItemUtil from "../../lib/ItemUtil";
 
 class OrganicCompostComonent implements BlockCustomComponent {
     constructor() {
@@ -27,13 +27,13 @@ class OrganicCompostComonent implements BlockCustomComponent {
             if (itemId == "minecraft:brown_mushroom") {
                 dimension.playSound("dig.grass", block.location)
                 dimension.setBlockType(topLocation, "farmersdelight:brown_mushroom_colony")
-                ItemUtil.clearItem(container, player.selectedSlotIndex)
+                ItemUtil.takeItem(container, player.selectedSlotIndex)
 
             }
             if (itemId == "minecraft:red_mushroom") {
                 dimension.playSound("dig.grass", block.location)
                 dimension.setBlockType(topLocation, "farmersdelight:red_mushroom_colony")
-                ItemUtil.clearItem(container, player.selectedSlotIndex)
+                ItemUtil.takeItem(container, player.selectedSlotIndex)
 
             }
 
@@ -53,7 +53,7 @@ class OrganicCompostComonent implements BlockCustomComponent {
         for (const location of detectLocs) {
             const block = dimension.getBlock(location);
             if (!block) continue;
-            if (organicCompostDetectList.includes(block.typeId)) {
+            if (COMPOSTABLES.has(block.typeId)) {
                 transChance += 0.02;
             }
             else if (block.hasTag('compost_activators')) {
