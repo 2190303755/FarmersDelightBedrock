@@ -1,4 +1,3 @@
-
 import { CookingPotBlock } from "./block/cookingPot/CookingPotBlock";
 import { CookingPotBlockEntity } from "./block/cookingPot/CookingPotBlockEntity";
 import { CuttingBoardBlock } from "./block/cuttingBoard/CuttingBoardBlock";
@@ -9,12 +8,12 @@ import { Skillet } from "./block/skillet/Skillet";
 import { SkilletEntity } from "./block/skillet/SkilletEntity";
 import { Knife } from "./item/Knife";
 import "./init/CookingPotRecipeRegistry";
+import "./init/CuttingBoardRecipeRegistries";
+import "./init/CookRecipeRegistries";
 import { Food } from "./item/Food";
-import { Cabinets } from "./block/cabinet/Cabinets"
+import { Cabinets } from "./block/cabinet/Cabinets";
 import { CabinetsBlockEntity } from "./block/cabinet/CabinetsBlockEntity";
-import { CuttingBoardRegistries } from "./init/CuttingBoardRecipeRegistries";
 import { RiceBlock } from "./block/Rice";
-import { CookRecipeRegistries } from "./init/CookRecipeRegistries";
 import { FarmersBook } from "./item/FarmersBook";
 import { BlockFood } from "./block/BlockFood";
 import { RiceRollMedleyComponentRegister } from "./customComponents/block/RiceRollMedleyComponent";
@@ -42,18 +41,14 @@ import { Basket } from "./block/basket/Basket";
 import { BasketBlockEntity } from "./block/basket/BasketBlockEntity";
 import "./customComponents/item/KnifeComponent"
 
-CuttingBoardRegistries.initCuttingBoardScoRegistries();
-CookRecipeRegistries.initCookScoRegistries();
-
-new CropComponentRegister()
+new CropComponentRegister();
 new CabinetComponentRegister();
 new WildCropComponent();
 new StoveComponentRegister();
 new PieComponent();
 
-
 new RiceRollMedleyComponentRegister();
-new InteractComponentRegister()
+new InteractComponentRegister();
 new RichSoilComponentRegister();
 new RichSoilFarmlandComponentRegister();
 new MushroomColonyComonentRegister();
@@ -62,8 +57,6 @@ new RopeComponentRegister();
 new TatamMatComponentRegister();
 new TatamComponentRegister();
 
-
-
 new SeedComponent();
 new CuttableComponentRegister();
 new CookableComonentRegister();
@@ -71,7 +64,6 @@ new IncreaseProductionComponentRegister();
 
 new ColoniesComonentRegister();
 new RiceSeedComponentRegister();
-
 
 new CookingPotBlock();
 new CookingPotBlockEntity();
@@ -90,7 +82,6 @@ new CabinetsBlockEntity();
 
 new Basket();
 new BasketBlockEntity();
-
 
 new RiceBlock();
 new FarmersBook();

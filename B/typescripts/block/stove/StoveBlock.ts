@@ -1,7 +1,7 @@
 import { Block, Container, Entity, ItemStack, PlayerInteractWithBlockAfterEvent, Player, PlayerPlaceBlockAfterEvent, Vector3, world } from "@minecraft/server";
 import { methodEventSub } from "../../lib/eventHelper";
 import { BlockWithEntity } from "../../lib/BlockWithEntity";
-import { vanillaItemList } from "../../data/recipe/cookRecipe";
+import { SMELTABLES } from "../../data/recipe/Smeltables";
 import { EntityUtil } from "../../lib/EntityUtil";
 import { ItemUtil } from "../../lib/ItemUtil";
 import { CookableComponentParams } from "../../customComponents/item/CookableComponent";
@@ -54,7 +54,7 @@ export class StoveBlock extends BlockWithEntity {
         const upBlock = player.dimension.getBlock({ x: x, y: y + 1, z: z })
         if (!(upBlock?.isAir)) return
         const cookable = itemStack.getComponent("farmersdelight:cookable")
-        if (!vanillaItemList.includes(itemStack.typeId) && !cookable) return
+        if (!cookable && !SMELTABLES.has(itemStack.typeId)) return
         const params = cookable?.customComponentParameters.params as CookableComponentParams
         const maxTime = cookable ? (params.time ? params.time : 200) : 200
         const emptySlotsCount = stoveContainer?.emptySlotsCount

@@ -1,8 +1,21 @@
 import { Entity, ItemStack, system, world } from "@minecraft/server";
 import { RecipeHolder } from "./RecipeHolder";
 import { ItemUtil } from "./ItemUtil";
+import { StackIngredient, Ingredient } from "../lib/Ingredient";
 
-export class CookingPotRecipe extends RecipeHolder {
+export interface CookingPotRecipe {
+    identifier: string;
+    recipe_book_tab?: string;
+    tags: string[];
+    priority: number;
+    time: number;
+    container?: Ingredient;
+    experience?: number;
+    ingredients: Ingredient[];
+    result: StackIngredient;
+}
+
+export class CookingPotRecipeHolder extends RecipeHolder {
     private currentRecipe2: any
     constructor(entity: Entity, inputSlots: number, outputSlots: number, tags: string[], recipeList?: any[]) {
         super(entity, inputSlots, outputSlots, tags, recipeList)

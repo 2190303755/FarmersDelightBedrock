@@ -1,7 +1,7 @@
 import { Block, Container, ContainerSlot, Dimension, Entity, EntityDamageCause, EntityEquippableComponent, EntityInventoryComponent, EquipmentSlot, ItemStack, Player, PlayerInteractWithBlockAfterEvent, PlayerPlaceBlockAfterEvent, ScoreboardObjective, ScoreboardScoreInfo, Vector3, world } from "@minecraft/server";
 import { methodEventSub } from "../../lib/eventHelper";
 import { BlockWithEntity } from "../../lib/BlockWithEntity";
-import { vanillaItemList } from "../../data/recipe/cookRecipe";
+import { SMELTABLES } from "../../data/recipe/Smeltables";
 import { EntityUtil } from "../../lib/EntityUtil";
 import { ItemUtil } from "../../lib/ItemUtil";
 import { BlockEntity } from "../../lib/BlockEntity";
@@ -61,7 +61,7 @@ export class Skillet extends BlockWithEntity {
     const itemId = itemStack.typeId;
     const amount = itemStack.amount;
     const cookable  = itemStack.getComponent("farmersdelight:cookable")
-    if (vanillaItemList.includes(itemId) || cookable) {
+    if (cookable || SMELTABLES.has(itemId)) {
       
       const params = cookable?.customComponentParameters.params as CookableComponentParams
       const time = cookable ? (params.time ? params.time : 200) : 200

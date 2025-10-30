@@ -1,71 +1,70 @@
-import {  Scoreboard, ScoreboardObjective, system, world } from "@minecraft/server";
-import { methodEventSub } from "../lib/eventHelper";
-import { BlockofAxeList, BlockofKnifeList, BlockofPickaxeList, BlockofShovelList, ItemofAxeList, ItemofKnifeList, ItemofPickaxeList, ItemofShearsList } from "../data/recipe/cuttingBoardRecipe";
+import { ScoreboardObjective, world } from "@minecraft/server";
+import { SubscribeEvent } from "../lib/EventSubscriber";
+import { ReceieveMessageEvent, ScoreboardLoadEvent } from "../lib/Events";
+import {
+    CUTTABLE_WITH_AXE_BLOCKS,
+    CUTTABLE_WITH_KINFE_ITEMS,
+    CUTTABLE_WITH_AXE_ITEMS,
+    CUTTABLE_WITH_SHEARS_ITEMS,
+    CUTTABLE_WITH_PICKAXE_BLOCKS,
+    CUTTABLE_WITH_PICKAXE_ITEMS,
+    CUTTABLE_WITH_KNIFE_BLOCKS,
+    CUTTABLE_WITH_SHOLVE_BLOCKS,
+} from "../data/recipe/Cuttables";
 
-let bool: boolean = true;
-let num: number = 0;
-
-export class CuttingBoardRegistries {
-    public static initCuttingBoardScoRegistries() {
-        system.runInterval(() => {
-            const allSco: ScoreboardObjective[] | undefined = world.scoreboard.getObjectives();
-            if (!allSco?.length || !bool) return;
-            for (const sco of allSco) {
-                const name: string = sco.displayName;
-                const reg: RegExpMatchArray | null = name.match(/farmersdelight_(\w+)/);
-                if (reg) {
-                    world.getDimension("overworld").runCommand(`function farmersdelight/cutting_board_recipe_registries/${reg[1]}`);
-                }
+export class CuttingBoardRegistry {
+    @SubscribeEvent(ScoreboardLoadEvent)
+    static loadRecipes(objectives: ScoreboardObjective[]) {
+        for (const objective of objectives) {
+            const match: RegExpMatchArray | null = objective.displayName.match(/farmersdelight_(\w+)/);
+            if (match) {
+                world
+                    .getDimension("overworld")
+                    .runCommand(`function farmersdelight/cutting_board_recipe_registries/${match[1]}`);
             }
-            bool = false;
-        })
-    }
-    @methodEventSub(system.afterEvents.scriptEventReceive, { namespaces: ["farmersdelight"] })
-    registries(args: any) {
-        const id: string = args.id;
-        if (id != "farmersdelight:cutting_board_recipe") return;
-        const message: string = args.message;
-        try {
-            if( message.includes("?")&&(message.split("?").length==2)){
-                const recipeType = message.split("?")[1]
-                if(recipeType=="ItemofPickaxeList"){
-                    ItemofPickaxeList.unshift(message.split("?")[0])
-                    num++;
-                }
-                if(recipeType=="ItemofAxeList"){
-                    ItemofAxeList.unshift(message.split("?")[0])
-                    num++;
-                }
-                if(recipeType=="ItemofShearsList"){
-                    ItemofShearsList.unshift(message.split("?")[0])
-                    num++;
-                }
-                if(recipeType=="BlockofAxeList"){
-                    BlockofAxeList.unshift(message.split("?")[0])
-                    num++;
-                }
-                if(recipeType=="BlockofPickaxeList"){
-                    BlockofPickaxeList.unshift(message.split("?")[0])
-                    num++;
-                }
-                if(recipeType=="BlockofKnifeList"){
-                    BlockofKnifeList.unshift(message.split("?")[0])
-                    num++;
-                }
-                if(recipeType=="BlockofShovelList"){
-                    BlockofShovelList.unshift(message.split("?")[0])
-                    num++;
-                }
-
-            }
-            else{
-                ItemofKnifeList.unshift(message)
-                num++;
-            }
-          
-            console.warn(`已加载 §4${num}§f 个砧板配方`);
-        } catch (error) {
-            return;
         }
+    }
+    @SubscribeEvent(ReceieveMessageEvent, "farmersdelight:cutting_board_recipe")
+    static registerCuttable(message: string) {
+        try {
+            const splited = message.split("?");
+            if (splited.length == 2) {
+                const identifier = splited[0];
+                switch (splited[1]) {
+                    case "ItemofPickaxeList":
+                        CUTTABLE_WITH_PICKAXE_ITEMS.add(identifier);
+                        console.info(identifier, "(item) is cuttable with pickaxe");
+                        break;
+                    case "ItemofAxeList":
+                        CUTTABLE_WITH_AXE_ITEMS.add(identifier);
+                        console.info(identifier, "(item) is cuttable with axe");
+                        break;
+                    case "ItemofShearsList":
+                        CUTTABLE_WITH_SHEARS_ITEMS.add(identifier);
+                        console.info(identifier, "(item) is cuttable with shears");
+                        break;
+                    case "BlockofAxeList":
+                        CUTTABLE_WITH_AXE_BLOCKS.add(identifier);
+                        console.info(identifier, "(block) is cuttable with axe");
+                        break;
+                    case "BlockofPickaxeList":
+                        CUTTABLE_WITH_PICKAXE_BLOCKS.add(identifier);
+                        console.info(identifier, "(block) is cuttable with pickaxe");
+                        break;
+                    case "BlockofKnifeList":
+                        CUTTABLE_WITH_KNIFE_BLOCKS.add(identifier);
+                        console.info(identifier, "(block) is cuttable with kinfe");
+                        break;
+                        break;
+                    case "BlockofShovelList":
+                        CUTTABLE_WITH_SHOLVE_BLOCKS.add(identifier);
+                        console.info(identifier, "(block) is cuttable with shovel");
+                        break;
+                }
+            } else {
+                CUTTABLE_WITH_KINFE_ITEMS.add(message);
+                console.info(message, "(item) is cuttable with kinfe");
+            }
+        } catch (_) {}
     }
 }

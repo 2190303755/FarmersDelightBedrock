@@ -1,4 +1,4 @@
-const vanillaItemList = [
+export const SMELTABLES: Set<string> = new Set([
     "minecraft:beef",
     "minecraft:chicken",
     "minecraft:cod",
@@ -15,7 +15,4 @@ const vanillaItemList = [
     "better_on_bedrock:beef_patty_raw",
     "better_on_bedrock:raw_deer_meat",
     "better_on_bedrock:raw_mutton_chops"
-
-];
-
-export { vanillaItemList };
+]);

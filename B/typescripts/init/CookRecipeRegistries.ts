@@ -1,38 +1,27 @@
-import {  Scoreboard, ScoreboardObjective, system, world } from "@minecraft/server";
-import { methodEventSub } from "../lib/eventHelper";
-import { vanillaItemList } from "../data/recipe/cookRecipe";
+import { ScoreboardObjective, world } from "@minecraft/server";
+import { SubscribeEvent } from "../lib/EventSubscriber";
+import { ReceieveMessageEvent, ScoreboardLoadEvent } from "../lib/Events";
+import { SMELTABLES } from "../data/recipe/Smeltables";
 
-;
-let bool: boolean = true;
-let num: number = 0;
-
-export class CookRecipeRegistries {
-    public static initCookScoRegistries() {
-        system.runInterval(() => {
-            const allSco: ScoreboardObjective[] | undefined = world.scoreboard.getObjectives();
-            if (!allSco?.length || !bool) return;
-            for (const sco of allSco) {
-                const name: string = sco.displayName;
-                const reg: RegExpMatchArray | null = name.match(/farmersdelight_(\w+)/);
-                if (reg) {
-                    world.getDimension("overworld").runCommand(`function farmersdelight/cook_recipe_registries/${reg[1]}`);
-                }
+class CookRecipeRegistry {
+    @SubscribeEvent(ScoreboardLoadEvent)
+    static loadRecipes(objectives: ScoreboardObjective[]) {
+        for (const objective of objectives) {
+            const match: RegExpMatchArray | null = objective.displayName.match(/farmersdelight_(\w+)/);
+            if (match) {
+                world
+                    .getDimension("overworld")
+                    .runCommand(`function farmersdelight/cook_recipe_registries/${match[1]}`);
             }
-            bool = false;
-        })
-    }
-    @methodEventSub(system.afterEvents.scriptEventReceive, { namespaces: ["farmersdelight"] })
-    registries(args: any) {
-        const id: string = args.id;
-        if (id != "farmersdelight:cook") return;
-        const message: string = args.message;
-        try {
-            
-            vanillaItemList.unshift(message)
-            num++;
-            console.warn(`已加载 §4${num}§f 个烧炼配方`);
-        } catch (error) {
-            return;
         }
     }
+    @SubscribeEvent(ReceieveMessageEvent, "farmersdelight:cook")
+    static registerRecipe(message: string) {
+        try {
+            SMELTABLES.add(message);
+            console.info(message, "is registered as smeltable");
+        } catch (_) {}
+    }
 }
+
+export const {} = CookRecipeRegistry; // 触发类加载

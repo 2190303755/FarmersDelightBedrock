@@ -1,18 +1,17 @@
 import { ScoreboardObjective, world } from "@minecraft/server";
 import { SubscribeEvent } from "../lib/EventSubscriber";
 import { ReceieveMessageEvent, ScoreboardLoadEvent } from "../lib/Events";
-import { vanillaCookingPotRecipe } from "../data/recipe/cookingPotRecipe";
+import { COOKING_POT_RECIPES } from "../data/recipe/cookingPotRecipe";
 
 class CookingPotRecipeRegistry {
     @SubscribeEvent(ScoreboardLoadEvent)
     static loadRecipes(objectives: ScoreboardObjective[]) {
-        for (const sco of objectives) {
-            const name: string = sco.displayName;
-            const reg: RegExpMatchArray | null = name.match(/farmersdelight_(\w+)/);
-            if (reg) {
+        for (const objective of objectives) {
+            const match: RegExpMatchArray | null = objective.displayName.match(/farmersdelight_(\w+)/);
+            if (match) {
                 world
                     .getDimension("overworld")
-                    .runCommand(`function farmersdelight/cooking_pot_recipe_registries/${reg[1]}`);
+                    .runCommand(`function farmersdelight/cooking_pot_recipe_registries/${match[1]}`);
             }
         }
     }
@@ -22,8 +21,8 @@ class CookingPotRecipeRegistry {
             const json: any = JSON.parse(message);
             if (!(json.time || json.ingredients || json.result)) return;
             if (!json.ingredients.length || !json.result.item) return;
-            vanillaCookingPotRecipe.recipe.push(json);
-            console.warn(`已加载 §4${vanillaCookingPotRecipe.recipe.length}§f 个厨锅配方`); // 还不如打印配方id
+            COOKING_POT_RECIPES.push(json);
+            console.info("Registered cooking pot recipe with id", json.identifer ?? json.identifier);
         } catch (_) {}
     }
 }
