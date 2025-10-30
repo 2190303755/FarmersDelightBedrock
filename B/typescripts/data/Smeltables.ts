@@ -1,7 +1,7 @@
 import { ItemStack } from "@minecraft/server";
-import { SortableRecipe, SortableRecipeManager } from "../../lib/RecipeManager";
+import { SortableRecipe, SortableRecipeManager } from "../lib/RecipeManager";
 
-const vanillaItemList = [
+export const SMELTABLES: Set<string> = new Set([
     "minecraft:beef",
     "minecraft:chicken",
     "minecraft:cod",
@@ -18,10 +18,7 @@ const vanillaItemList = [
     "better_on_bedrock:beef_patty_raw",
     "better_on_bedrock:raw_deer_meat",
     "better_on_bedrock:raw_mutton_chops"
-
-];
-
-export { vanillaItemList };
+]);
 
 export interface CookingRecipe {
     /** 产物赋命名空间标识符 */
@@ -66,5 +63,3 @@ export function findCookingRecipe(stack: ItemStack): CookingRecipe | undefined {
     return  RECIPES_BY_ID.get(stack.typeId)
         ?? RECIPES_BY_TAG.findSortedRecipe(recipe => stack.hasTag(recipe.ingredientTag));
 }
-
-

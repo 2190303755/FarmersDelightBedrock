@@ -10,9 +10,9 @@ import {
     world,
 } from "@minecraft/server";
 import { BlockWithEntity } from "../../lib/BlockWithEntity";
-import { EntityUtil } from "../../lib/EntityUtil";
-import { ItemUtil } from "../../lib/ItemUtil";
-import { findCookingRecipe } from "../../data/recipe/cookRecipe";
+import { hasLimitedMaterials } from "../../lib/EntityUtil";
+import { takeItem } from "../../lib/ItemUtil";
+import { findCookingRecipe } from "../../data/Smeltables";
 import { subscribeEvent } from "../../lib/EventSubscriber";
 
 export class StoveBlock extends BlockWithEntity {
@@ -51,7 +51,7 @@ export class StoveBlock extends BlockWithEntity {
                 const stoveitemStack = stoveContainer.getItem(i)
                 if (stoveitemStack) {
                     entity.dimension.spawnItem(stoveitemStack, { x, y: y + 1.4, z })
-                    ItemUtil.clearItem(stoveContainer, i)
+                    takeItem(stoveContainer, i);
                     return
                 }
             }
@@ -70,7 +70,7 @@ export class StoveBlock extends BlockWithEntity {
             if (stoveContainer?.getItem(i) == undefined) {
                 stoveContainer?.setItem(i, itemStack)
                 entity.setDynamicProperty(`farmersdelight:item_${i}_max_time`, maxTime);
-                if (EntityUtil.gameMode(player)) ItemUtil.clearItem(container, player.selectedSlotIndex);
+                if (hasLimitedMaterials(player)) takeItem(container, player.selectedSlotIndex);
                 return
             }
         }

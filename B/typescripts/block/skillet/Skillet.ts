@@ -6,11 +6,10 @@ import {
     world,
 } from "@minecraft/server";
 import { BlockWithEntity } from "../../lib/BlockWithEntity";
-import { vanillaItemList } from "../../data/recipe/cookRecipe";
-import { EntityUtil } from "../../lib/EntityUtil";
-import { ItemUtil } from "../../lib/ItemUtil";
-
-import { isHeated } from "../../data/heatBlocks";
+import { SMELTABLES } from "../../data/Smeltables";
+import * as EntityUtil from "../../lib/EntityUtil";
+import * as ItemUtil from "../../lib/ItemUtil";
+import { isHeated } from "../../data/Heaters";
 import { CookableComponentParams } from "../../customComponents/item/CookableComponent";
 import { subscribeEvent } from "../../lib/EventSubscriber";
 
@@ -66,8 +65,7 @@ export class Skillet extends BlockWithEntity {
     const itemId = itemStack.typeId;
     const amount = itemStack.amount;
     const cookable  = itemStack.getComponent("farmersdelight:cookable")
-    if (vanillaItemList.includes(itemId) || cookable) {
-      
+    if (cookable || SMELTABLES.has(itemId)) {
       const params = cookable?.customComponentParameters.params as CookableComponentParams
       const time = cookable ? (params.time ? params.time : 200) : 200
       if (currentItem == "undefined") {
@@ -75,7 +73,7 @@ export class Skillet extends BlockWithEntity {
         entity.setDynamicProperty("farmersdelight:canAdd", itemStack.maxAmount - amount);
         entity.setDynamicProperty("farmersdelight:amount", amount);
         entity.setDynamicProperty("farmersdelight:cookData", JSON.stringify({ datas: [{ count: amount, time: time }] }));
-        if (EntityUtil.gameMode(player)) ItemUtil.clearItem(container, player.selectedSlotIndex, amount);
+        if (EntityUtil.hasLimitedMaterials(player)) ItemUtil.takeItem(container, player.selectedSlotIndex, amount);
       }
 
       else if (itemId == currentItem) {
@@ -85,18 +83,18 @@ export class Skillet extends BlockWithEntity {
           entity.setDynamicProperty("farmersdelight:cookData", JSON.stringify(cookData));
           entity.setDynamicProperty("farmersdelight:amount", totalAmount+amount);
 
-          if (EntityUtil.gameMode(player)) ItemUtil.clearItem(container, player.selectedSlotIndex, amount);
+          if (EntityUtil.hasLimitedMaterials(player)) ItemUtil.takeItem(container, player.selectedSlotIndex, amount);
         }
         if (canAddAmount - amount < 0 && canAddAmount != 0) {
           cookData.datas.push({ count: canAddAmount, time: time });
           entity.setDynamicProperty("farmersdelight:canAdd", 0);
           entity.setDynamicProperty("farmersdelight:amount", 64);
           entity.setDynamicProperty("farmersdelight:cookData", JSON.stringify(cookData));
-          if (EntityUtil.gameMode(player)) ItemUtil.clearItem(container, player.selectedSlotIndex, canAddAmount);
+          if (EntityUtil.hasLimitedMaterials(player)) ItemUtil.takeItem(container, player.selectedSlotIndex, canAddAmount);
         }
       }
-
-        if (isHeated(args.block) && canAddAmount > 0) {
+      
+      if (isHeated(args.block) && canAddAmount > 0) {
         entity.dimension.playSound("block.farmersdelight.skillet.add_food",entity.location);
       }
     } 

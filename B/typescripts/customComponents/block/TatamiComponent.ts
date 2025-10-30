@@ -1,10 +1,10 @@
 import {
-    BlockComponentPlayerPlaceBeforeEvent,
-    BlockComponentTickEvent,
-    BlockCustomComponent,
-    Direction,
-    StartupEvent,
-    system,
+  BlockComponentPlayerPlaceBeforeEvent,
+  BlockComponentTickEvent,
+  BlockCustomComponent,
+  Direction,
+  StartupEvent,
+  system,
 } from "@minecraft/server";
 import { subscribeEvent } from "../../lib/EventSubscriber";
 

@@ -1,16 +1,4 @@
-
-const ItemofBlockList: string[] = [
-    "wild_cabbages",
-    "wild_tomatoes",
-    "wild_onions",
-    "wild_carrots",
-    "wild_potatoes",
-    "wild_beetroots",
-    "wild_rice",
-    "brown_mushroom_colony",
-    "red_mushroom_colony"
-];
-const ItemofKnifeList: string[] = [
+export const CUTTABLE_WITH_KNIFE_ITEMS: Set<string> =  new Set([
     "minecraft:cake",
     "minecraft:cooked_cod",
     "minecraft:cod",
@@ -43,9 +31,9 @@ const ItemofKnifeList: string[] = [
     "better_on_bedrock:dough",
     "better_on_bedrock:berry_pie",
     "better_on_bedrock:grape_pie"
-];
-const ItemofPickaxeList: string[] = []
-const ItemofAxeList: string[] = [
+]);
+export const CUTTABLE_WITH_PICKAXE_ITEMS: Set<string> = new Set();
+export const CUTTABLE_WITH_AXE_ITEMS: Set<string> = new Set([
     "minecraft:oak_door",
     "minecraft:spruce_door",
     "minecraft:birch_door",
@@ -76,8 +64,8 @@ const ItemofAxeList: string[] = [
     "better_on_bedrock:chorus_door",
     "better_on_bedrock:voiding_door",
     "better_on_bedrock:vacant_door"
-];
-const BlockofAxeList: string[] = [
+]);
+export const CUTTABLE_WITH_AXE_BLOCKS: Set<string> = new Set([
     "minecraft:oak_log",
     "minecraft:spruce_log",
     "minecraft:birch_log",
@@ -128,8 +116,8 @@ const BlockofAxeList: string[] = [
     "better_on_bedrock:chorus_trapdoor",
     "better_on_bedrock:voiding_trapdoor",
     "better_on_bedrock:vacant_trapdoor"
-];
-const BlockofPickaxeList: string[] = [
+]);
+export const CUTTABLE_WITH_PICKAXE_BLOCKS : Set<string> = new Set([
     "minecraft:amethyst_block",
     "minecraft:bricks",
     "minecraft:deepslate",
@@ -143,17 +131,13 @@ const BlockofPickaxeList: string[] = [
     "better_on_bedrock:dripstone_bricks",
     "better_on_bedrock:polished_dripstone",
     "better_on_bedrock:polished_dripstone_wall"
-];
-const BlockofKnifeList: string[] = [
+]);
+export const CUTTABLE_WITH_KNIFE_BLOCKS: Set<string> = new Set([
     "minecraft:pumpkin",
     "minecraft:melon_block"
-];
-const BlockofShovelList: string[] = [
+]);
+export const CUTTABLE_WITH_SHOLVE_BLOCKS: Set<string> = new Set([
     "minecraft:clay",
     "minecraft:gravel"
-];
-
-const ItemofShearsList: string[] = [
-    "minecraft:saddle"
-];
-export { ItemofKnifeList, BlockofAxeList, BlockofKnifeList, ItemofBlockList ,BlockofPickaxeList,BlockofShovelList,ItemofAxeList,ItemofPickaxeList, ItemofShearsList};
+]);
+export const CUTTABLE_WITH_SHEARS_ITEMS: Set<string> = new Set("minecraft:saddle");

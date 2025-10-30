@@ -4,63 +4,40 @@ import {
     BlockComponentRandomTickEvent,
     BlockComponentTickEvent,
     BlockCustomComponent,
-    EntityInventoryComponent,
     EquipmentSlot,
     GameMode,
     Player,
     StartupEvent,
     system,
 } from "@minecraft/server";
-import { isEnchanted, ItemUtil } from "../../lib/ItemUtil";
+import { isEnchanted, takeItemInSlot } from "../../lib/ItemUtil";
 import { subscribeEvent } from "../../lib/EventSubscriber";
 import { spawnLootAtBlock } from "../../lib/LootUtil";
-import { getEquipment } from "../../lib/EntityUtil";
+import { getEquipment, getEquipmentSlot } from "../../lib/EntityUtil";
 import { KnownBlockStates } from "../../data/KnownBlockStates";
 import { PlayerTickEvent } from "../../lib/Events";
+import { playBoneMealEffect } from "./CropComponent";
 
 export class RopeComponent implements BlockCustomComponent {
-    constructor() {
-        this.onTick = this.onTick.bind(this);
-        this.onRandomTick = this.onRandomTick.bind(this);
-        this.onPlayerInteract = this.onPlayerInteract.bind(this);
-        this.onPlayerBreak = this.onPlayerBreak.bind(this);
-    }
     onPlayerInteract(args: BlockComponentPlayerInteractEvent): void {
         const block = args.block;
-        const player = args.player;
-        const dimension = args.dimension
-        
-        if (!player) return;
-        const inventory = player?.getComponent("inventory") as EntityInventoryComponent;
-        const container = inventory?.container;
-        const itemId = container?.getSlot(player.selectedSlotIndex).typeId
-        const stage = Number(block.permutation.getState("farmersdelight:stage"))
-        const random = Math.floor(Math.random() * 101)
-        try {
-            if (itemId == "minecraft:bone_meal" && stage < 4) {
-                dimension.playSound("item.bone_meal.use", block.location)
-                if (player?.getGameMode() ==  GameMode.Creative) {
-                    block.dimension.spawnParticle("minecraft:crop_growth_emitter", { x: block.location.x + 0.5, y: block.location.y + 0.5, z: block.location.z + 0.5 });
-                    block.setPermutation(block.permutation.withState("farmersdelight:stage", 4))
+        const stage = block.permutation.getState("farmersdelight:stage") ?? 0;
+        if (stage == 4) {
+            block.setPermutation(block.permutation.withState("farmersdelight:stage", 1));
+            spawnLootAtBlock(block, "farmersdelight/crops/farmersdelight_tomato_riped");
+        } else {
+            const player = args.player;
+            const slot = getEquipmentSlot(player, EquipmentSlot.Mainhand);
+            if (slot?.hasItem() && slot.typeId === "minecraft:bone_meal") {
+                playBoneMealEffect(block);
+                if (Math.random() < 0.6) {
+                    block.setPermutation(block.permutation.withState("farmersdelight:stage", stage + 1));
                 }
-                else {
-                    if (random <= 60) {
-                        block.setPermutation(block.permutation.withState("farmersdelight:stage", stage + 1))
-                    }
-                    block.dimension.spawnParticle("minecraft:crop_growth_emitter", { x: block.location.x + 0.5, y: block.location.y + 0.5, z: block.location.z + 0.5 });
-                    if (!container) return;
-                    ItemUtil.clearItem(container, player?.selectedSlotIndex)
+                if (player!!.getGameMode() !== GameMode.Creative) {
+                    takeItemInSlot(slot, 1, false);
                 }
-
             }
-            if (stage == 4) {
-                block.setPermutation(block.permutation.withState("farmersdelight:stage", 1))
-                spawnLootAtBlock(block, "farmersdelight/crops/farmersdelight_tomato_riped")
-            }
-        } catch (error) {
-
         }
-
     }
     onPlayerBreak(args: BlockComponentPlayerBreakEvent): void {
         const player = args.player;

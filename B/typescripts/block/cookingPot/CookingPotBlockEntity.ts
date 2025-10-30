@@ -1,116 +1,224 @@
 import {
     Block,
     Container,
+    ContainerSlot,
     Entity,
-    EntityInventoryComponent,
+    EntityComponentTypes,
     ItemStack,
-    system,
     Vector3,
-    world,
 } from "@minecraft/server";
-import { BlockEntity, BlockEntityData } from "../../lib/BlockEntity";
-import { isSamePos } from "../../lib/ObjectUtil";
-import { vanillaCookingPotRecipe } from "../../data/recipe/cookingPotRecipe";
-import { CookingPotRecipe } from "../../lib/CookingPotRecipe";
-import { isHeated } from "../../data/heatBlocks";
-import { subscribeEvent } from "../../lib/EventSubscriber";
+import { COOKING_POT_RECIPES, CookingPotRecipe } from "../../data/CookingPotRecipes";
+import { isHeated } from "../../data/Heaters";
+import { attachedBlockEntity } from "../../lib/EventSubscriber";
+import { hasMatches, makeStack, StackSpec } from "../../lib/Ingredients";
+import { hasContainer, isContainer } from "../../data/ItemContainers";
+import { takeItemInSlot } from "../../lib/ItemUtil";
 
+interface CookingContext {
+    last: CookingPotRecipe | undefined;
+    time: number;
+    total: number;
+}
 
-const recipes: any[] = vanillaCookingPotRecipe.recipe;
-const recipeFactory: Map<string, CookingPotRecipe> = new Map()
+const COOKING_CONTEXT: Map<string, CookingContext> = new Map();
 
-// 意义不明的进度函数
-function arrowheadUtil(entity: Entity, oldItemStack: ItemStack, slot: number, container: Container) {
-    if (entity.getDynamicProperty("farmersdelight:not_can_set")) return;
-    const itemStack: ItemStack | undefined = container.getItem(slot);
-    if (itemStack?.typeId != oldItemStack.typeId) {
-        container.setItem(slot, oldItemStack);
+// 拿到有足够原料且产物可以继续堆叠的配方
+function getAvailableRecipe(container: Container, result: ContainerSlot, last?: CookingPotRecipe): CookingPotRecipe | undefined {
+    const input: ItemStack[] = [];
+    for (let i = 0; i < 6; ++i) {
+        const stack = container.getItem(i);
+        if (stack) {
+            input.push(stack);
+        }
+    }
+    if (!input.length) return undefined;
+    let isAvailable: (recipe: CookingPotRecipe) => boolean;
+    if (result.hasItem()) {
+        isAvailable = (recipe) => {
+            if (input.length !== recipe.ingredients.length) return false;
+            const cooked = makeStack(recipe.result);
+            if (cooked.amount + result.amount > result.maxAmount || !result.isStackableWith(cooked)) return false;
+            return hasMatches(input, recipe.ingredients);
+        };
+    } else {
+        isAvailable = (recipe) => hasMatches(input, recipe.ingredients);
+    }
+    if (last && isAvailable(last)) return last;
+    return COOKING_POT_RECIPES.findSortedRecipe(isAvailable);
+}
+
+function assemble(cooked: StackSpec, result: ContainerSlot): boolean {
+    const stack = makeStack(cooked);
+    if (result.hasItem()) {
+        const total = stack.amount + result.amount;
+        if (total > result.maxAmount || !result.isStackableWith(stack)) return false;
+        result.amount = total;
+    } else {
+        result.setItem(stack);
+    }
+    return true;
+}
+
+function transferCookedItem(cooked: ContainerSlot, container: Container) {
+    const result = cooked.getItem();
+    if (!result) return;
+    const typeId = result.typeId;
+    let delta = result.amount;
+    let utensil: ContainerSlot | undefined;
+    if (hasContainer(typeId)) {
+        utensil = container.getSlot(7);
+        const stack = utensil.getItem();
+        if (!stack || !isContainer(typeId, stack)) return;
+        delta = Math.min(delta, stack.amount);
+    }
+    const output = container.getSlot(8);
+    if (output.hasItem()) {
+        if (output.isStackableWith(result)) {
+            const amount = output.amount;
+            delta = Math.min(delta, output.maxAmount - amount);
+            output.amount = amount + delta;
+        } else return;
+    } else {
+        result.amount = delta;
+        output.setItem(result);
+    }
+    takeItemInSlot(cooked, delta, false);
+    if (utensil) {
+        takeItemInSlot(utensil, delta, false);
     }
 }
 
-//刷新方块实体状态以及防TP
-function blockEntityLoot(args: BlockEntityData, id: string) {
-    const cookingPotblock = new ItemStack('farmersdelight:cooking_pot');
-    if (!isSamePos(args.entity.location, args.blockEntityDataLocation)) args.entity.teleport(args.blockEntityDataLocation);
-    if (args.block?.typeId == id) return;
-    
-    const inventory = args.entity?.getComponent("inventory") as EntityInventoryComponent;
-    const container: Container | undefined  = inventory?.container
-
-    for (let slot = 0; slot < 9; slot++) {
-        const itemStack: ItemStack | undefined = container?.getItem(slot);
-        if (slot != 6 && slot != 8 && itemStack) {
-            args.entity.dimension.spawnItem(itemStack, args.blockEntityDataLocation);
+@attachedBlockEntity({
+    entityTypes: ["farmersdelight:cooking_pot"],
+    eventTypes: ["farmersdelight:cooking_pot_tick"],
+})
+export class CookingPotBlockEntity {
+    static onDiscard(entity: Entity): undefined {
+        const { dimension, location } = entity;
+        const loot = new ItemStack("farmersdelight:cooking_pot");
+        const container = entity.getComponent(EntityComponentTypes.Inventory)?.container;
+        if (!container) {
+            dimension.spawnItem(loot, location);
+            return;
         }
-        if (slot == 6) {
-            if (itemStack) {
-                const typeId: string = itemStack.typeId;
-                const amount: number = itemStack.amount;
-                container?.setItem(6, undefined);
-                cookingPotblock.setLore([`§r§f${amount} 份食物: ${typeId}`]);
-            }
-            container?.setItem(9, undefined);
-            container?.setItem(10, undefined);
-            args.entity.setDynamicProperty("farmersdelight:not_can_set", true);
-            args.entity.dimension.spawnItem(cookingPotblock, args.blockEntityDataLocation);
-        }
-        if (slot == 8) {
-            if (itemStack) {
-                args.entity.dimension.spawnItem(itemStack, args.blockEntityDataLocation);
-            }
-            BlockEntity.clearEntity(args);
-            break
-        }
-    }
-}
-export class CookingPotBlockEntity extends BlockEntity {
-    @subscribeEvent(world.afterEvents.dataDrivenEntityTrigger, { entityTypes: ["farmersdelight:cooking_pot"], eventTypes: ["farmersdelight:cooking_pot_tick"] })
-    tick(args: any) {
-        const entityBlockData = super.blockEntityData(args.entity);
-        if (!entityBlockData) return;
-        const entity: Entity = entityBlockData.entity;
-        const { x, y, z }: Vector3 = entity.location;
-        const block: Block = entityBlockData.block;
-        const inventory = args.entity?.getComponent("inventory") as EntityInventoryComponent;
-        const container: Container | undefined  = inventory?.container
-        if (!container) return;
-        blockEntityLoot(entityBlockData, "farmersdelight:cooking_pot");
-        const map: Map<string, number> = new Map();
-        const progress: number = entity.getDynamicProperty("farmersdelight:cooking_pot_progress") as number ?? 0
-        //热源检测
-        const heated = isHeated(block);
-        //配方管理器初始化, 每tick更新一次
-        let cookingPotRecipe
-        if (!recipeFactory.get(entity.id)) {
-            cookingPotRecipe = new CookingPotRecipe(entity, 6, 1, ['cooking_pot'], recipes);
-            recipeFactory.set(entity.id, cookingPotRecipe);
-        }
-        else {
-            cookingPotRecipe = recipeFactory.get(entity.id) as CookingPotRecipe;
-        }
-    
-        entity.setDynamicProperty('cookingPot:heated', heated);
-        cookingPotRecipe.update()
-        if (heated) {
-            arrowheadUtil(entity, new ItemStack("farmersdelight:fire_1"), 10, container);
-            if (system.currentTick % 15 == 0) {
-                const random = Math.floor(Math.random() * 10);
-                block.dimension.spawnParticle(`farmersdelight:steam_${random}`, { x: x, y: y + 1, z: z });
-                block.dimension.spawnParticle('farmersdelght:bubble', { x: x, y: y + 0.63, z: z });
-            }
-            if (system.currentTick % 80 == 0) {
-                container?.getItem(6) ? entity.runCommand("playsound block.farmersdelight.cooking_pot.boil_soup @a ~ ~ ~ 1 1") : entity.runCommand("playsound block.farmersdelight.cooking_pot.boil_water @a ~ ~ ~ 1 1");
-            }
-            const progress = cookingPotRecipe.getProgress()
-            if (progress) {
-                const num = Math.floor(progress * 10) * 10;
-                const arrowhead = new ItemStack(`farmersdelight:cooking_pot_arrow_${num}`);
-                arrowheadUtil(entity, arrowhead, 9, container);
+        let stack: ItemStack | undefined = container.getItem(6);
+        if (stack) {
+            container.setItem(6, undefined);
+            loot.setDynamicProperty("farmersdelight:cookedItem", stack.typeId);
+            const amount = stack.amount;
+            if (amount > 1) {
+                loot.setDynamicProperty("farmersdelight:cookedItemCount", amount);
+                loot.setLore([{
+                    translate: "farmersdelight.tooltip.cooking_pot.many_servings",
+                    with: {
+                        rawtext: [
+                            { text: stack.amount.toString() },
+                            { translate: stack.localizationKey },
+                        ],
+                    },
+                }]);
             } else {
-                arrowheadUtil(entity,  new ItemStack("farmersdelight:cooking_pot_arrow_0"), 9, container);
+                loot.setLore([{
+                    translate: "farmersdelight.tooltip.cooking_pot.single_serving",
+                    with: { rawtext: [{ translate: stack.localizationKey }] },
+                }]);
+            }
+        }
+        dimension.spawnItem(loot, location);
+        for (let i = 0; i < 9; ++i) {
+            stack = container.getItem(i);
+            if (stack) { // 此时6是undefined
+                dimension.spawnItem(stack, location);
+                container.setItem(i, undefined);
+            }
+        }
+        container.setItem(9, undefined);
+        container.setItem(10, undefined);
+    }
+
+    static onRemove(entityId: string) {
+        COOKING_CONTEXT.delete(entityId);
+    }
+
+    static onTick(entity: Entity, block: Block) {
+        const container = entity.getComponent(EntityComponentTypes.Inventory)?.container;
+        if (!container) return;
+        let context: CookingContext | undefined = COOKING_CONTEXT.get(entity.id);
+        if (!context) {
+            context = {
+                last: undefined,
+                time: entity.getDynamicProperty("recipe:progressTick") as number ?? 0, // 这是什么命名空间
+                total: entity.getDynamicProperty("farmersdelight:totalTime") as number ?? 0,
+            };
+            COOKING_CONTEXT.set(entity.id, context);
+        }
+        const heated = isHeated(block);
+        const cooked = container.getSlot(6);
+        if (heated) {
+            const last = context.last;
+            const recipe = getAvailableRecipe(container, cooked, last);
+            if (recipe) {
+                if (last !== recipe) {
+                    context.last = recipe;
+                    context.time = 0;
+                    context.total = recipe.time;
+                    entity.setDynamicProperty("farmersdelight:totalTime", context.total);
+                } else if (++context.time >= recipe.time && assemble(recipe.result, cooked)) {
+                    context.time = 0;
+                    if (recipe.experience) {
+                        // 先记着罢
+                        const current = Number(entity.getDynamicProperty("farmersdelight:experience"));
+                        entity.setProperty("farmersdelight:experience", Number.isNaN(current) ? recipe.experience : recipe.experience + current);
+                    }
+                    for (let i = 0; i < 6; ++i) {
+                        const slot = container.getSlot(i);
+                        if (!slot.hasItem()) continue;
+                        const amount = slot.amount - 1;
+                        if (amount > 0) {
+                            slot.amount = amount;
+                        } else {
+                            slot.setItem(undefined);
+                        }
+                    }
+                }
+            } else {
+                context.time = 0;
+            }
+            if (Math.random() < 0.04) { // 触发间隔大于15刻的概率约为50%
+                const { x, y, z }: Vector3 = entity.location;
+                block.dimension.spawnParticle("farmersdelght:bubble", { x: x, y: y + 0.63, z: z });
+            }
+            if (Math.random() < 0.02) { // 总之概率是上面的一半
+                const { x, y, z }: Vector3 = entity.location;
+                block.dimension.spawnParticle(`farmersdelight:steam_${Math.floor(Math.random() * 10)}`, {
+                    x: x,
+                    y: y + 1,
+                    z: z,
+                });
+            }
+            if (Math.random() < 0.008) { // 触发间隔大于80刻的概率约为50%
+                entity.runCommand(cooked.hasItem()
+                    ? "playsound block.farmersdelight.cooking_pot.boil_soup @a ~ ~ ~ 1 1"
+                    : "playsound block.farmersdelight.cooking_pot.boil_water @a ~ ~ ~ 1 1",
+                );
+            }
+            if (container.getItem(10)?.typeId !== "farmersdelight:fire_1") {
+                container.setItem(10, new ItemStack("farmersdelight:fire_1"));
             }
         } else {
-            arrowheadUtil(entity, new ItemStack("farmersdelight:fire_0"), 10, container);
+            if (context.time > 0) {
+                context.time = Math.max(0, context.time - 2);
+            }
+            if (container.getItem(10)?.typeId !== "farmersdelight:fire_0") {
+                container.setItem(10, new ItemStack("farmersdelight:fire_0"));
+            }
+        }
+        transferCookedItem(cooked, container);
+        entity.setDynamicProperty("recipe:progressTick", context.time);
+        const progress = context.total ? context.time / context.total : 0;
+        const expected = `farmersdelight:cooking_pot_arrow_${Math.floor(progress * 10) * 10}`;
+        if (container.getItem(9)?.typeId !== expected) {
+            container.setItem(9, new ItemStack(expected));
         }
     }
 }

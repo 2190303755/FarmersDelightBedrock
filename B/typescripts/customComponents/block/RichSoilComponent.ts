@@ -4,56 +4,49 @@ import {
     BlockCustomComponent,
     BlockPermutation,
     CustomComponentParameters,
-    EntityInventoryComponent,
+    Direction,
+    EquipmentSlot,
+    GameMode,
 } from "@minecraft/server";
-import { ItemUtil } from "../../lib/ItemUtil";
 import { blockComponent } from "../../lib/EventSubscriber";
+import { getEquipmentSlot } from "../../lib/EntityUtil";
+import { hurtItemInSlot, takeItemInSlot } from "../../lib/ItemUtil";
 
 @blockComponent("farmersdelight:rich_soil")
 export class RichSoilComponent implements BlockCustomComponent {
     onPlayerInteract(args: BlockComponentPlayerInteractEvent): void {
         const player = args.player;
-        const face = args.face;
-        const inventory = player?.getComponent("inventory") as EntityInventoryComponent;
-        const container = inventory?.container;
-        const block = args.block;
-        const dimension = args.dimension;
-        if (!player) return;
-        if (!container) return;
-        const selectedSlot = container?.getSlot(player.selectedSlotIndex)
-        try {
-            const itemId = selectedSlot?.typeId;
-            const hoeTag = selectedSlot.hasTag("minecraft:is_hoe");
-            const topLocation = { x: block.location.x, y: block.location.y + 1, z: block.location.z }
-            const topBlockId = dimension.getBlock(topLocation)?.typeId
-            if (face == 'Up' && topBlockId == "minecraft:air") {
-                if (itemId == "minecraft:sugar_cane") {
-                    dimension.playSound("dig.grass", block.location)
-                    dimension.setBlockType(topLocation, "farmersdelight:rich_soil_sugar_cane_bottom")
-                    ItemUtil.clearItem(container,player.selectedSlotIndex)
-                }
-                if (itemId == "minecraft:brown_mushroom") {
-                    dimension.playSound("dig.grass", block.location)
-                    dimension.setBlockType(topLocation, "farmersdelight:brown_mushroom_colony")
-                    ItemUtil.clearItem(container,player.selectedSlotIndex)
-
-                }
-                if (itemId == "minecraft:red_mushroom") {
-                    dimension.playSound("dig.grass", block.location)
-                    dimension.setBlockType(topLocation, "farmersdelight:red_mushroom_colony")
-                    ItemUtil.clearItem(container,player.selectedSlotIndex)
-
-                }
-
+        const slot = getEquipmentSlot(player, EquipmentSlot.Mainhand);
+        if (!slot?.hasItem()) return;
+        if (slot.hasTag("minecraft:is_hoe")) {
+            const block = args.block;
+            block.setType("farmersdelight:rich_soil_farmland");
+            block.dimension.playSound("use.gravel", block);
+            if (player!!.getGameMode() !== GameMode.Creative) {
+                hurtItemInSlot(slot);
             }
-            if (hoeTag) {
-                dimension.setBlockType(block.location, "farmersdelight:rich_soil_farmland")
-                dimension.playSound("use.gravel", block.location)
-                ItemUtil.damageItem(container, player.selectedSlotIndex, 1)
+            return;
+        }
+        if (args.face === Direction.Up) {
+            let type: string;
+            switch (slot.typeId) {
+                case "minecraft:sugar_cane":
+                    type = "farmersdelight:rich_soil_sugar_cane_bottom";
+                    break;
+                case "minecraft:brown_mushroom":
+                    type = "farmersdelight:brown_mushroom_colony";
+                    break;
+                case "minecraft:red_mushroom":
+                    type = "farmersdelight:red_mushroom_colony";
+                    break;
+                default:
+                    return;
             }
-
-        } catch (error) {
-
+            const above = args.block.above();
+            if (above?.typeId !== "minecraft:air") return;
+            above.dimension.playSound("dig.grass", above);
+            above.setType(type);
+            takeItemInSlot(slot, 1, false);
         }
     }
 

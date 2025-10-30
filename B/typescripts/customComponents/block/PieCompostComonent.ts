@@ -1,7 +1,8 @@
 import {
     BlockComponentPlayerInteractEvent,
     BlockCustomComponent,
-    CustomComponentParameters, EntityComponentTypes,
+    CustomComponentParameters,
+    EntityComponentTypes,
     ItemStack,
     PlayerBreakBlockBeforeEvent,
     system,

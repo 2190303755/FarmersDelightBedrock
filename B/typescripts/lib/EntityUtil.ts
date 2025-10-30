@@ -4,7 +4,6 @@ import {
     Direction,
     Entity,
     EntityComponentTypes,
-    EntityQueryOptions,
     EquipmentSlot,
     GameMode,
     ItemStack,
@@ -17,6 +16,11 @@ export function getEquipment(entity: Entity | undefined, slot: EquipmentSlot): I
 
 export function getEquipmentSlot(entity: Entity | undefined, slot: EquipmentSlot): ContainerSlot | undefined {
     return entity?.getComponent(EntityComponentTypes.Equippable)?.getEquipmentSlot(slot);
+}
+
+// 玩家是否材料有限（JE LivingEntity#hasInfiniteMaterials)
+export function hasLimitedMaterials(player: Player): boolean {
+    return player.getGameMode() != GameMode.Creative;
 }
 
 // 返回实体水平朝向（JE LivingEntity#getDirecion)
@@ -45,36 +49,4 @@ export function dropsItems(
         }
     }
     container.clearAll();
-}
-
-export class EntityUtil {
-    //检测传入的玩家是否为非创造模式
-    public static gameMode(player: Entity) {
-        const query: EntityQueryOptions = {
-            type: "minecraft:player",
-            name: player.nameTag,
-            location: player.location,
-            gameMode: GameMode.Creative
-        }
-        const entities = player.dimension.getEntities(query);
-        return !entities.length;
-    }
-    //获取玩家二维朝向
-    public static cardinalDirection(player: Entity|Player, yOffset: number = 0) {
-        const rot = player.getRotation();
-        let rotY = rot.y + yOffset;
-        if (rotY > 180) rotY -= 360;
-        if (-45 <= rotY && rotY < 45) {
-            return Direction.North;
-        }
-        else if (45 <= rotY && rotY < 135) {
-            return Direction.East;
-        }
-        else if (-135 <= rotY && rotY < -45) {
-            return Direction.West;
-        }
-        else if (135 <= rotY || rotY < -135) {
-            return Direction.South;
-        }
-    }
 }

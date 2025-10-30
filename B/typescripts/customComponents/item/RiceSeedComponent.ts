@@ -1,15 +1,14 @@
 import {
-    Container,
     Direction,
-    EntityInventoryComponent,
+    EquipmentSlot,
     ItemComponentUseOnEvent,
     ItemCustomComponent,
     Player,
     StartupEvent,
     system,
 } from "@minecraft/server";
-import { ItemUtil } from "../../lib/ItemUtil";
-import { EntityUtil } from "../../lib/EntityUtil";
+import { takeEquippedItem } from "../../lib/ItemUtil";
+import { hasLimitedMaterials } from "../../lib/EntityUtil";
 import { subscribeEvent } from "../../lib/EventSubscriber";
 
 /**
@@ -21,22 +20,18 @@ class RiceSeedComponent implements ItemCustomComponent {
     }
 
     onUseOn(args: ItemComponentUseOnEvent): void {
-        const itemStack = args.itemStack;
-        const block = args.block;
         const source = args.source;
         if (source instanceof Player) {
-            if (!itemStack || args.blockFace != Direction.Up || (!block.getTags().includes("dirt"))) return;
+            const itemStack = args.itemStack;
+            const block = args.block;
+            if (!itemStack || args.blockFace !== Direction.Up || (!block.hasTag("dirt"))) return;
             system.run(() => {
                 const water = block.above();
-                if (!(water?.typeId == 'minecraft:water' && water?.permutation.getState('liquid_depth') == 0)) return
+                if (water?.typeId !== "minecraft:water" || water.permutation.getState("liquid_depth")) return;
                 block.dimension.setBlockType(water.location,"farmersdelight:rice_block")
-                const inventory = source?.getComponent("inventory") as EntityInventoryComponent;
-                const container: Container = inventory?.container as Container
-                if (EntityUtil.gameMode(source)) ItemUtil.clearItem(container, source.selectedSlotIndex)
+                if (hasLimitedMaterials(source)) takeEquippedItem(source, EquipmentSlot.Mainhand, 1, false);
             })
         }
-
-
     }
 }
 export class RiceSeedComponentRegister {
