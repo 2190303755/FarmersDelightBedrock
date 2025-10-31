@@ -23,7 +23,7 @@ class CookingPotRecipeRegistry {
             if (!json.ingredients.length || !json.result.item) return;
             COOKING_POT_RECIPES.push(json);
             console.info("Registered cooking pot recipe with id", json.identifer ?? json.identifier);
-        } catch (_) {}
+        } catch {}
     }
 }
 

@@ -1,42 +1,82 @@
 import {
     Block,
     BlockPermutation,
-    Container,
-    ContainerSlot,
-    Dimension,
-    Direction,
     Entity,
-    EntityDataDrivenTriggerEventOptions,
-    EntityEquippableComponent,
-    EntityHealthComponent, EntityHitBlockAfterEvent,
-    EntityInventoryComponent,
-    EntityIsChargedComponent,
-    EntityOnFireComponent,
+    EntityComponentTypes,
+    EntityDieAfterEvent,
     EquipmentSlot,
-    ItemEnchantableComponent,
     ItemStack,
     Player,
     PlayerBreakBlockAfterEvent,
-    PlayerBreakBlockBeforeEvent,
-    PlayerInteractWithBlockAfterEvent, PlayerInteractWithBlockBeforeEvent, system,
-    Vector3,
+    PlayerInteractWithBlockBeforeEvent,
+    system,
     world,
 } from "@minecraft/server";
-import { methodEventSub } from "../lib/eventHelper";
-import * as EntityUtil from "../lib/EntityUtil";
-import * as ItemUtil from "../lib/ItemUtil";
+import { hasLimitedMaterials, horizontalDirectionOf } from "../lib/EntityUtil";
+import { hurtItem, enchantmentLevelOf } from "../lib/ItemUtil";
+import { subscribeEvent } from "../lib/EventSubscriber";
+import { oppositeOf } from "../lib/DirectionUtil";
 
-function spawnLoot(path: string, dimenion: Dimension, location: Vector3) {
-    return dimenion.runCommand(`loot spawn ${location.x} ${location.y} ${location.z} loot "${path}"`);
+export type BlockLoot = (stack: ItemStack, state: BlockPermutation) => string | undefined;
+export type EntityLoot = (stack: ItemStack, victim: Entity) => ItemStack | undefined;
+
+function blockLoot(table: string): BlockLoot {
+    return (_, __) => table;
 }
 
-function level(level: number | undefined) {
-    if (!level) {
-        return 0;
-    } else {
-        return level;
+function entityLoot(item: string): EntityLoot {
+    return (_, __) => new ItemStack(item);
+}
+
+function dispatchOnFire(raw: string, cooked: string): EntityLoot {
+    return (_, victim) =>
+        victim.getComponent(EntityComponentTypes.OnFire)?.onFireTicksRemaining
+            ? new ItemStack(cooked)
+            : new ItemStack(raw);
+}
+
+const STRAW_FROM_GRASS: BlockLoot = blockLoot("farmersdelight/straw_from_grass");
+const STRAW_FROM_WHEAT: BlockLoot = (_, state) =>
+    state.getState("growth") === 7 ? "farmersdelight/straw" : undefined;
+const STRAW_FROM_RICE: BlockLoot = (_, state) =>
+    state.getState("farmersdelight:growth") === 3 ? "farmersdelight/straw" : undefined;
+
+const LOOT_LEATHER: EntityLoot = entityLoot("minecraft:leather");
+const LOOT_STRING: EntityLoot = entityLoot("minecraft:string");
+const LOOT_HAM_BY_CHANCE: EntityLoot = (stack, victim) => {
+    if (Math.floor(Math.random() * 10) < 5 + enchantmentLevelOf(stack, "minecraft:enchantable")) {
+        return victim.getComponent(EntityComponentTypes.OnFire)?.onFireTicksRemaining
+            ? new ItemStack("farmersdelight:smoked_ham")
+            : new ItemStack("farmersdelight:ham");
     }
-}
+    return undefined;
+};
+
+export const ENTITY_LOOT_TABLE: Map<string, EntityLoot> = new Map([
+    ["minecraft:pig", LOOT_HAM_BY_CHANCE],
+    ["minecraft:chicken", entityLoot("minecraft:feather")],
+    ["minecraft:hoglin", dispatchOnFire("farmersdelight:ham", "farmersdelight:smoked_ham")],
+    ["minecraft:cow", LOOT_LEATHER],
+    ["minecraft:mooshroom", LOOT_LEATHER],
+    ["minecraft:donkey", LOOT_LEATHER],
+    ["minecraft:horse", LOOT_LEATHER],
+    ["minecraft:mule", LOOT_LEATHER],
+    ["minecraft:llama", LOOT_LEATHER],
+    ["minecraft:trader_llama", LOOT_LEATHER],
+    ["minecraft:shulker", LOOT_LEATHER],
+    ["minecraft:rabbit", entityLoot("minecraft:rabbit_hide")],
+    ["minecraft:spider", entityLoot("minecraft:shulker_shell")],
+    ["minecraft:cave_spider", LOOT_STRING],
+]);
+
+export const BLOCK_LOOT_TABLE: Map<string, BlockLoot> = new Map([
+    ["minecraft:tallgrass", STRAW_FROM_GRASS],
+    ["minecraft:short_grass", STRAW_FROM_GRASS],
+    ["minecraft:fern", STRAW_FROM_GRASS],
+    ["minecraft:wheat", STRAW_FROM_WHEAT],
+    ["minecraft:rice_block_upper", STRAW_FROM_RICE],
+    ["minecraft:sandy_shrub_block", blockLoot("farmersdelight/straw_from_sandy_shrub")],
+]);
 
 const DROPS_CAKE_SLICE: Set<string> = new Set([
     "minecraft:cake",
@@ -59,98 +99,48 @@ const DROPS_CAKE_SLICE: Set<string> = new Set([
     "minecraft:black_candle_cake",
 ]);
 
-export class Knife {
+class Knife {
     //刀掉落物改变机制有关的战利品
-    @methodEventSub(world.afterEvents.entityHurt)
-    hurt(args: any) {
-        const entity: Entity = args.damageSource.damagingEntity;
-        const hurt: Entity = args.hurtEntity;
-        if (!entity || !hurt) return;
+    @subscribeEvent(world.afterEvents.entityDie)
+    static onKill(args: EntityDieAfterEvent) {
+        const attacker = args.damageSource.damagingEntity;
+        const victim = args.deadEntity;
+        if (!attacker || !victim) return;
         try {
-            const equipment = entity.getComponent(EntityEquippableComponent.componentId) as EntityEquippableComponent;
-            const mainHand: ContainerSlot | undefined = equipment?.getEquipmentSlot(EquipmentSlot.Mainhand);
-            if (!mainHand.getItem()) return;
-            if (!mainHand.getItem()?.getComponent("farmersdelight:increase_production")) return;
-            const Looting: number | undefined = (equipment?.getEquipmentSlot(EquipmentSlot.Mainhand).getItem()?.getComponent("minecraft:enchantable") as ItemEnchantableComponent)?.getEnchantment("looting")?.level;
-            const health = hurt.getComponent(EntityHealthComponent.componentId) as EntityHealthComponent;
-            const onFire = (hurt.getComponent("minecraft:onfire") as EntityOnFireComponent)?.onFireTicksRemaining;
-            const random = Math.floor(Math.random() * 10);
-            if (!health?.currentValue && hurt.typeId === "minecraft:pig" && random < (5 + level(Looting))) {
-                if (!onFire) {
-                    hurt.dimension.spawnItem(new ItemStack("farmersdelight:ham"), hurt.location);
-                } else {
-                    hurt.dimension.spawnItem(new ItemStack("farmersdelight:smoked_ham"), hurt.location);
-                }
+            const stack = attacker
+                .getComponent(EntityComponentTypes.Equippable)
+                ?.getEquipmentSlot(EquipmentSlot.Mainhand)
+                ?.getItem();
+            if (!stack || !stack.hasComponent("farmersdelight:increase_production")) return;
+            const loot = ENTITY_LOOT_TABLE.get(victim.typeId)?.(stack, victim);
+            if (loot) {
+                victim.dimension.spawnItem(loot, victim.location);
             }
-            ;
-            if (!health?.currentValue && hurt.typeId === "minecraft:chicken") {
-                hurt.dimension.spawnItem(new ItemStack("minecraft:feather"), hurt.location);
-            }
-            ;
-            if (!health?.currentValue && hurt.typeId === "minecraft:hoglin") {
-                if (!onFire) {
-                    hurt.dimension.spawnItem(new ItemStack("farmersdelight:ham"), hurt.location);
-                } else {
-                    hurt.dimension.spawnItem(new ItemStack("farmersdelight:smoked_ham"), hurt.location);
-                }
-
-            }
-            ;
-            const leatherAnimals = ["minecraft:cow", "minecraft:mooshroom", "minecraft:donkey", "minecraft:horse", "minecraft:mule", "minecraft:llama", "minecraft:trader_llama"];
-            if (!health?.currentValue && hurt.typeId in leatherAnimals) {
-                hurt.dimension.spawnItem(new ItemStack("minecraft:leather"), hurt.location);
-            }
-            ;
-            if (!health?.currentValue && hurt.typeId === "minecraft:rabbit") {
-                hurt.dimension.spawnItem(new ItemStack("minecraft:rabbit_hide"), hurt.location);
-            }
-            ;
-            if (!health?.currentValue && hurt.typeId === "minecraft:shulker") {
-                hurt.dimension.spawnItem(new ItemStack("minecraft:shulker_shell"), hurt.location);
-            }
-            ;
-            if (!health?.currentValue && hurt.typeId in ["minecraft:spider", "minecraft:cave_spider"]) {
-                hurt.dimension.spawnItem(new ItemStack("minecraft:trip_wire"), hurt.location);
-            }
-            ;
-        } catch (error) {
-
+        } catch {
         }
-
     }
 
     //草秆
-    @methodEventSub(world.afterEvents.playerBreakBlock)
-    break(args: any) {
+    @subscribeEvent(world.afterEvents.playerBreakBlock)
+    static onBreakBlock(args: PlayerBreakBlockAfterEvent) {
+        const stack = args.itemStackAfterBreak;
+        if (!stack || !stack.hasTag("farmersdelight:is_knife") || stack.hasComponent("farmersdelight:knife")) return;
         const player: Player = args.player;
-        const itemStack: ItemStack = args.itemStackAfterBreak;
-        const block: Block = args.block;
-        const permutation = args.brokenBlockPermutation;
-        const blockTypeId: string = args.brokenBlockPermutation.type.id;
-        // 使用刀组件的物品已经处理了掉落物
-        if (!itemStack || !itemStack.hasTag("farmersdelight:is_knife") || itemStack.hasComponent("farmersdelight:knife")) return;
-        if (EntityUtil.hasLimitedMaterials(player)) {
-            const inventory = player?.getComponent("inventory") as EntityInventoryComponent;
-            const container = inventory?.container as Container;
-            if (!container) return;
-            ItemUtil.hurtItem(container, player.selectedSlotIndex);
-            if (blockTypeId == "minecraft:tallgrass") {
-                spawnLoot("farmersdelight/straw_from_grass", block.dimension, block.location);
-            } else if (blockTypeId == "minecraft:short_grass" || blockTypeId == "minecraft:fern") {
-                spawnLoot("farmersdelight/straw_from_grass", block.dimension, block.location);
-            } else if (blockTypeId == "minecraft:wheat") {
-                const age = permutation.getState("growth");
-                if (age == 7) spawnLoot("farmersdelight/straw", block.dimension, block.location);
-            } else if (blockTypeId == "farmersdelight:rice_block_upper") {
-                const age = permutation.getState("farmersdelight:growth");
-                if (age == 3) spawnLoot("farmersdelight/straw", block.dimension, block.location);
-            } else if (blockTypeId == "farmersdelight:sandy_shrub_block") {
-                spawnLoot("farmersdelight/straw_from_sandy_shrub", block.dimension, block.location);
+        if (hasLimitedMaterials(player)) {
+            const container = player?.getComponent(EntityComponentTypes.Inventory)?.container;
+            if (container) {
+                hurtItem(container, player.selectedSlotIndex);
+            }
+            const permutation = args.brokenBlockPermutation;
+            const loot = BLOCK_LOOT_TABLE.get(permutation.type.id)?.(stack, permutation);
+            if (loot) {
+                const { dimension, x, y, z }: Block = args.block;
+                dimension.runCommand(`loot spawn ${x} ${y} ${z} loot "${loot}"`);
             }
         }
     }
 
-    @methodEventSub(world.beforeEvents.playerInteractWithBlock)
+    @subscribeEvent(world.beforeEvents.playerInteractWithBlock)
     static sliceCake(event: PlayerInteractWithBlockBeforeEvent) {
         const stack = event.itemStack;
         if (!stack || !DROPS_CAKE_SLICE.has(event.block.typeId) || !stack.hasTag("farmersdelight:is_knife")) return;
@@ -178,3 +168,5 @@ export class Knife {
         });
     }
 }
+
+export const {} = Knife;

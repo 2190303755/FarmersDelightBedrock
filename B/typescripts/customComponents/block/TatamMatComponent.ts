@@ -2,6 +2,7 @@ import { Block, BlockComponentTickEvent, BlockCustomComponent, BlockComponentPla
 import * as EntityUtil from "../../lib/EntityUtil";
 import * as ItemUtil from "../../lib/ItemUtil";
 import { methodEventSub } from "../../lib/eventHelper";
+import { oppositeOf } from "../../lib/DirectionUtil";
 
 class TatamMatComponent implements BlockCustomComponent {
     constructor() {
@@ -23,25 +24,24 @@ class TatamMatComponent implements BlockCustomComponent {
         system.run(() => {
             if (!player) return
             let other: Block | undefined;
-            const direction = EntityUtil.cardinalDirection(player, 180)?.toLowerCase() as string;
-            const otherDirection = EntityUtil.cardinalDirection(player)?.toLowerCase() as string;
+            const direction = EntityUtil.horizontalDirectionOf(player);
             switch (direction) {
-                case 'east':
+                case Direction.East:
                     other = block?.east();
                     break;
-                case 'west':
+                case Direction.West:
                     other = block?.west();
                     break;
-                case 'north':
+                case Direction.North:
                     other = block?.north();
                     break;
-                case 'south':
+                case Direction.South:
                     other = block?.south();
                     break;
             }
             if (!other?.isAir) return
-            const mainPerm = BlockPermutation.resolve('farmersdelight:tatami_mat_main', { 'minecraft:cardinal_direction': direction, 'farmersdelight:init': true });
-            const otherPerm = BlockPermutation.resolve('farmersdelight:tatami_mat_other', { 'minecraft:cardinal_direction': otherDirection, 'farmersdelight:init': true });
+            const mainPerm = BlockPermutation.resolve('farmersdelight:tatami_mat_main', { 'minecraft:cardinal_direction': direction.toLowerCase(), 'farmersdelight:init': true });
+            const otherPerm = BlockPermutation.resolve('farmersdelight:tatami_mat_other', { 'minecraft:cardinal_direction': oppositeOf(direction).toLowerCase(), 'farmersdelight:init': true });
             dimension.playSound("dig.cloth", block.location)
             
             block?.setPermutation(mainPerm);

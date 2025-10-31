@@ -20,7 +20,7 @@ class CookRecipeRegistry {
         try {
             SMELTABLES.add(message);
             console.info(message, "is registered as smeltable");
-        } catch (_) {}
+        } catch {}
     }
 }
 

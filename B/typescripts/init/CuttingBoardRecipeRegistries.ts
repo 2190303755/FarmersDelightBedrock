@@ -12,7 +12,7 @@ import {
     CUTTABLE_WITH_SHOLVE_BLOCKS,
 } from "../data/Cuttables";
 
-export class CuttingBoardRegistry {
+class CuttingBoardRegistry {
     @subscribeEvent(ScoreboardLoadEvent)
     static loadRecipes(objectives: ScoreboardObjective[]) {
         for (const objective of objectives) {
@@ -65,6 +65,8 @@ export class CuttingBoardRegistry {
                 CUTTABLE_WITH_KINFE_ITEMS.add(message);
                 console.info(message, "(item) is cuttable with kinfe");
             }
-        } catch (_) {}
+        } catch {}
     }
 }
+
+export const {} = CuttingBoardRegistry

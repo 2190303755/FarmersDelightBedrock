@@ -16,8 +16,8 @@ import {
     system,
 } from "@minecraft/server";
 import { methodEventSub } from "../../lib/eventHelper";
-import { EntityUtil } from "../../lib/EntityUtil";
-import { toVector3 } from "../../lib/DirectionUtil";
+import { horizontalDirectionOf } from "../../lib/EntityUtil";
+import { oppositeOf, toVector3 } from "../../lib/DirectionUtil";
 
 export type BlockLoot = (stack: ItemStack, state: BlockPermutation) => string | undefined;
 
@@ -75,7 +75,7 @@ class KnifeComponent implements ItemCustomComponent {
         }
         const face = event.blockFace;
         const direction = face === Direction.Up || face === Direction.Down
-            ? EntityUtil.cardinalDirection(entity) ?? Direction.North
+            ? oppositeOf(horizontalDirectionOf(entity))
             : face;
         const vector = toVector3(direction);
         block.setPermutation(

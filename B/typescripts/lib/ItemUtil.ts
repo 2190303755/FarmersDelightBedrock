@@ -1,21 +1,28 @@
 import {
     Block,
     Container,
+    ContainerSlot,
+    EnchantmentType,
     Entity,
     EntityComponentTypes,
     EquipmentSlot,
     GameMode,
-    ItemDurabilityComponent,
+    ItemComponentTypes,
     ItemStack,
     ItemType,
     Player,
     Vector3,
 } from "@minecraft/server";
 
+export function enchantmentLevelOf(stack: ItemStack | undefined, enchantment: string | EnchantmentType): number {
+    const instance = stack?.getComponent(ItemComponentTypes.Enchantable)?.getEnchantment(enchantment);
+    return instance ? instance.level : 0;
+}
+
 export function hurtItem(container: Container, index: number, damage: number = 1) {
     const stack = container.getItem(index);
     if (!stack) return;
-    const durability = stack.getComponent(ItemDurabilityComponent.componentId);
+    const durability = stack.getComponent(ItemComponentTypes.Durability);
     if (durability && durability.maxDurability > durability.damage) {
         durability.damage += damage;
         container.setItem(index, stack);
@@ -25,9 +32,7 @@ export function hurtItem(container: Container, index: number, damage: number = 1
 }
 
 // 返回仍需取出的物品量
-export function takeItem(container: Container, index: number, max: number = 1): number {
-    const slot = container.getSlot(index);
-    if (!slot) return max;
+export function takeItemInSlot(slot: ContainerSlot, max: number): number {
     const remaining = slot.amount;
     if (remaining > max) {
         slot.amount = remaining - max;
@@ -38,17 +43,19 @@ export function takeItem(container: Container, index: number, max: number = 1): 
 }
 
 // 返回仍需取出的物品量
-export function takeOffhandItem(entity: Entity, max: number = 1): number {
-    const equippable = entity.getComponent(EntityComponentTypes.Equippable);
-    const slot = equippable?.getEquipmentSlot(EquipmentSlot.Offhand);
-    if (!slot) return max;
-    const remaining = slot.amount;
-    if (remaining > max) {
-        slot.amount = remaining - max;
-        return 0;
-    }
-    slot.setItem(undefined);
-    return max - remaining;
+export function takeItem(container: Container, slot: number, max: number = 1): number {
+    const reference = container.getSlot(slot);
+    return reference ? takeItemInSlot(reference, max) : max;
+}
+
+// 返回仍需取出的物品量
+export function takeEquippedItem(
+    entity: Entity,
+    slot: EquipmentSlot = EquipmentSlot.Mainhand,
+    max: number = 1
+): number {
+    const reference = entity.getComponent(EntityComponentTypes.Equippable)?.getEquipmentSlot(slot);
+    return reference ? takeItemInSlot(reference, max) : max;
 }
 
 export function consumeItem(player: Player, slot: number = player.selectedSlotIndex, convertTo?: ItemStack) {
@@ -73,7 +80,12 @@ export function consumeItem(player: Player, slot: number = player.selectedSlotIn
     }
 }
 
-export function spawnItem(source: Block | Entity, item: string | ItemType, amount: number = 1, pos?: Vector3): Entity | undefined {
+export function spawnItem(
+    source: Block | Entity,
+    item: string | ItemType,
+    amount: number = 1,
+    pos?: Vector3
+): Entity | undefined {
     return spawnStack(source, new ItemStack(item, amount), pos);
 }
 

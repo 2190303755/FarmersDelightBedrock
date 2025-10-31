@@ -58,7 +58,7 @@ export class BlockEntity {
     };
     //清除方块实体
     public static clearEntity(args: BlockEntityData) {
-        system.runTimeout(() => {
+        system.run(() => {
             args.entity.remove();
         });
     }

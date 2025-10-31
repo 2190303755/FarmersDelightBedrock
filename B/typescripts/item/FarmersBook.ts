@@ -1,8 +1,8 @@
 import { ItemStack, Player, ItemUseAfterEvent, world } from "@minecraft/server";
-import { methodEventSub } from "../lib/eventHelper";
 import { ActionFormData, ActionFormResponse } from '@minecraft/server-ui';
+import { subscribeEvent } from "../lib/EventSubscriber";
 
-function thanksForm(player: any) {
+function thanksForm(player: Player) {
     const thanks = new ActionFormData()
         .title({ "rawtext": [{ "text": "farmersdelight.book.thanks" }] })
         .body({
@@ -43,7 +43,7 @@ function thanksForm(player: any) {
         }
     })
 };
-function cuttingBoardForm(player: any) {
+function cuttingBoardForm(player: Player) {
     const cuttingBoard = new ActionFormData()
         .title({ "rawtext": [{ "text": "tile.farmersdelight:cutting_board.name" }] })
         .body({
@@ -60,7 +60,7 @@ function cuttingBoardForm(player: any) {
         }
     })
 };
-function stoveForm(player: any) {
+function stoveForm(player: Player) {
     const stove = new ActionFormData()
         .title({ "rawtext": [{ "text": "tile.farmersdelight:stove.name" }] })
         .body({
@@ -81,7 +81,7 @@ function stoveForm(player: any) {
         }
     })
 };
-function cookingPotForm(player: any) {
+function cookingPotForm(player: Player) {
     const cookingPotForm = new ActionFormData()
         .title({ "rawtext": [{ "text": "tile.farmersdelight:cooking_pot.name" }] })
         .body({
@@ -112,7 +112,7 @@ function cookingPotForm(player: any) {
         }
     })
 }
-function skilletForm(player: any) {
+function skilletForm(player: Player) {
     const skilletForm = new ActionFormData()
         .title({ "rawtext": [{ "text": "tile.farmersdelight:skillet_block.name" }] })
         .body({
@@ -137,7 +137,7 @@ function skilletForm(player: any) {
         }
     })
 }
-function cropForm(player: any) {
+function cropForm(player: Player) {
     const cropForm = new ActionFormData()
         .title({ "rawtext": [{ "text": "farmersdelight.book.crop" }] })
         .body({
@@ -170,7 +170,7 @@ function cropForm(player: any) {
         }
     })
 }
-function mainForm(player: any) {
+function mainForm(player: Player) {
     const form = new ActionFormData()
         .title({ "rawtext": [{ "text": "farmersdelight.book.title" }] })
         .button({ "rawtext": [{ "text": "tile.farmersdelight:cutting_board.name" }] })
@@ -204,9 +204,7 @@ function mainForm(player: any) {
     })
 };
 export class FarmersBook {
-
-
-    @methodEventSub(world.afterEvents.itemUse)
+    @subscribeEvent(world.afterEvents.itemUse)
     itemUse(args: ItemUseAfterEvent) {
         const player = args.source;
         const itemStack: ItemStack | undefined = args.itemStack;

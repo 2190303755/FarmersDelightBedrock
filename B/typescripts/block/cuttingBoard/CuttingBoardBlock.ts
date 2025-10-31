@@ -102,7 +102,7 @@ export class CuttingBoardBlock extends BlockWithEntity {
                             item.applyImpulse(offset);
                         }
                         if (EntityUtil.hasLimitedMaterials(player)) {
-                            ItemUtil.takeOffhandItem(player);
+                            ItemUtil.takeEquippedItem(player, EquipmentSlot.Offhand);
                             ItemUtil.hurtItem(container, player.selectedSlotIndex);
                         }
                         return;
@@ -118,7 +118,7 @@ export class CuttingBoardBlock extends BlockWithEntity {
                                 `loot spawn ${entity.location.x} ${entity.location.y} ${entity.location.z} loot "${namespace}/cutting_board/${id}"`
                             );
                             if (EntityUtil.hasLimitedMaterials(player)) {
-                                ItemUtil.takeOffhandItem(player);
+                                ItemUtil.takeEquippedItem(player, EquipmentSlot.Offhand);
                                 ItemUtil.hurtItem(container, player.selectedSlotIndex);
                             }
                             return;
@@ -161,7 +161,7 @@ export class CuttingBoardBlock extends BlockWithEntity {
                         return;
                     }
                 }
-                if (EntityUtil.hasLimitedMaterials(player)) ItemUtil.takeOffhandItem(player);
+                if (EntityUtil.hasLimitedMaterials(player)) ItemUtil.takeEquippedItem(player, EquipmentSlot.Offhand);
             }
         }
         if (!offHand && mainHand && itemId == "undefined") {
