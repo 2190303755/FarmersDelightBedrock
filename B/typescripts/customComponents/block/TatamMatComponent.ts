@@ -1,8 +1,18 @@
-import { Block, BlockComponentTickEvent, BlockCustomComponent, BlockComponentPlayerPlaceBeforeEvent, BlockPermutation, Container, Direction, system, EntityInventoryComponent, world, StartupEvent } from "@minecraft/server";
+import {
+    Block,
+    BlockComponentPlayerPlaceBeforeEvent,
+    BlockComponentTickEvent,
+    BlockCustomComponent,
+    BlockPermutation,
+    Direction,
+    EntityInventoryComponent,
+    StartupEvent,
+    system,
+} from "@minecraft/server";
 import * as EntityUtil from "../../lib/EntityUtil";
 import * as ItemUtil from "../../lib/ItemUtil";
-import { methodEventSub } from "../../lib/eventHelper";
 import { oppositeOf } from "../../lib/DirectionUtil";
+import { subscribeEvent } from "../../lib/EventSubscriber";
 
 class TatamMatComponent implements BlockCustomComponent {
     constructor() {
@@ -83,7 +93,7 @@ class TatamMatComponent implements BlockCustomComponent {
     }
 }
 export class TatamMatComponentRegister {
-    @methodEventSub(system.beforeEvents.startup)
+    @subscribeEvent(system.beforeEvents.startup)
     register(args: StartupEvent) {
         args.blockComponentRegistry.registerCustomComponent('farmersdelight:tatami_mat', new TatamMatComponent());
     }

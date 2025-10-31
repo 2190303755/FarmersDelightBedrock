@@ -3,18 +3,17 @@ import {
     Container,
     Entity,
     EntityInventoryComponent,
-    EntitySpawnAfterEvent,
     ItemStack,
-    Vector3,
     system,
+    Vector3,
     world,
 } from "@minecraft/server";
-import { methodEventSub } from "../../lib/eventHelper";
 import { BlockEntity, BlockEntityData } from "../../lib/BlockEntity";
 import * as ObjectUtil from "../../lib/ObjectUtil";
 import { COOKING_POT_RECIPES } from "../../data/CookingPotRecipes";
 import { CookingPotRecipeHolder } from "../../lib/CookingPotRecipe";
-import { HEAT_CONDUCTORS, HEAT_SOURCES, isHeated } from "../../data/Heaters";
+import { isHeated } from "../../data/Heaters";
+import { subscribeEvent } from "../../lib/EventSubscriber";
 
 const recipeFactory: Map<string, CookingPotRecipeHolder> = new Map();
 
@@ -64,7 +63,7 @@ function blockEntityLoot(args: BlockEntityData, id: string) {
     }
 }
 export class CookingPotBlockEntity extends BlockEntity {
-    @methodEventSub(world.afterEvents.dataDrivenEntityTrigger, {
+    @subscribeEvent(world.afterEvents.dataDrivenEntityTrigger, {
         entityTypes: ["farmersdelight:cooking_pot"],
         eventTypes: ["farmersdelight:cooking_pot_tick"],
     })

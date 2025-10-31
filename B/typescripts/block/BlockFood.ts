@@ -1,11 +1,24 @@
-import { Block, Container, Dimension, EntityInventoryComponent, ItemStack, Player, PlayerBreakBlockBeforeEvent, PlayerInteractWithBlockAfterEvent, Vector3, system, world } from "@minecraft/server";
-import { methodEventSub } from "../lib/eventHelper";
+import {
+    Block,
+    Container,
+    Dimension,
+    EntityInventoryComponent,
+    ItemStack,
+    Player,
+    PlayerBreakBlockBeforeEvent,
+    PlayerInteractWithBlockAfterEvent,
+    system,
+    Vector3,
+    world,
+} from "@minecraft/server";
 import * as ItemUtil from "../lib/ItemUtil";
+import { subscribeEvent } from "../lib/EventSubscriber";
+
 function spawnLoot(path: string, dimenion: Dimension, location: Vector3) {
     return dimenion.runCommand(`loot spawn ${location.x} ${location.y} ${location.z} loot "${path}"`)
 }
 export class BlockFood {
-    @methodEventSub(world.afterEvents.playerInteractWithBlock)
+    @subscribeEvent(world.afterEvents.playerInteractWithBlock)
     itemUseOn(args: PlayerInteractWithBlockAfterEvent) {
         const player: Player = args.player;
         const block: Block = args.block;
@@ -51,7 +64,7 @@ export class BlockFood {
         };
 
     }
-    @methodEventSub(world.beforeEvents.playerBreakBlock)
+    @subscribeEvent(world.beforeEvents.playerBreakBlock)
     break(args: PlayerBreakBlockBeforeEvent) {
         const block: Block = args.block;
         const location = args.block.location;

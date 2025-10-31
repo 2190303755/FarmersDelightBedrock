@@ -1,10 +1,10 @@
-import { Entity, PlayerInteractWithEntityAfterEvent, world } from "@minecraft/server";
-import { methodEventSub } from "../../lib/eventHelper";
+import { Entity, world } from "@minecraft/server";
 import { BlockEntity } from "../../lib/BlockEntity";
+import { subscribeEvent } from "../../lib/EventSubscriber";
 
 
 export class BasketBlockEntity extends BlockEntity {
-    @methodEventSub(world.afterEvents.dataDrivenEntityTrigger, { eventTypes: ["farmersdelight:basket_tick"] })
+    @subscribeEvent(world.afterEvents.dataDrivenEntityTrigger, { eventTypes: ["farmersdelight:basket_tick"] })
     tick(args: any) {
         const entityBlockData = super.blockEntityData(args.entity);
         if (!entityBlockData) return;

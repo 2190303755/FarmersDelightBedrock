@@ -1,31 +1,26 @@
 import {
-    Block,
-    BlockPermutation,
-    Container,
-    Entity,
     EntityInventoryComponent,
     EquipmentSlot,
     ItemStack,
-    Player,
     PlayerInteractWithBlockAfterEvent,
     PlayerPlaceBlockAfterEvent,
     Vector3,
     world,
 } from "@minecraft/server";
-import { methodEventSub } from "../../lib/eventHelper";
 import { BlockWithEntity } from "../../lib/BlockWithEntity";
-import * as EntityUtil from "../../lib/EntityUtil"
+import * as EntityUtil from "../../lib/EntityUtil";
 import {
     CUTTABLE_WITH_AXE_BLOCKS,
+    CUTTABLE_WITH_AXE_ITEMS,
+    CUTTABLE_WITH_KNIFE_ITEMS,
     CUTTABLE_WITH_KNIFE_BLOCKS,
     CUTTABLE_WITH_PICKAXE_BLOCKS,
-    CUTTABLE_WITH_SHOLVE_BLOCKS,
-    CUTTABLE_WITH_AXE_ITEMS,
-    CUTTABLE_WITH_KINFE_ITEMS,
     CUTTABLE_WITH_SHEARS_ITEMS,
+    CUTTABLE_WITH_SHOLVE_BLOCKS,
 } from "../../data/Cuttables";
 import * as ItemUtil from "../../lib/ItemUtil";
 import { CuttingBroadComponentParams } from "../../customComponents/item/CuttableComponent";
+import { subscribeEvent } from "../../lib/EventSubscriber";
 
 const toolMapping = [
     { list: CUTTABLE_WITH_AXE_BLOCKS, tool: "minecraft:is_axe", mode: "tag", isBlock: true },
@@ -33,14 +28,14 @@ const toolMapping = [
     { list: CUTTABLE_WITH_PICKAXE_BLOCKS, tool: "minecraft:is_pickaxe", mode: "tag", isBlock: true },
     { list: CUTTABLE_WITH_SHOLVE_BLOCKS, tool: "minecraft:is_shovel", mode: "tag", isBlock: true },
     { list: CUTTABLE_WITH_AXE_ITEMS, tool: "minecraft:is_axe", mode: "tag", isBlock: false },
-    { list: CUTTABLE_WITH_KINFE_ITEMS, tool: "farmersdelight:is_knife", mode: "tag", isBlock: false },
-    { list: CUTTABLE_WITH_KINFE_ITEMS, tool: "minecraft:is_pickaxe", mode: "tag", isBlock: false },
+    { list: CUTTABLE_WITH_KNIFE_ITEMS, tool: "farmersdelight:is_knife", mode: "tag", isBlock: false },
+    { list: CUTTABLE_WITH_KNIFE_ITEMS, tool: "minecraft:is_pickaxe", mode: "tag", isBlock: false },
     { list: CUTTABLE_WITH_SHEARS_ITEMS, tool: "minecraft:shears", mode: "item", isBlock: false },
 ];
 export { toolMapping };
 
 export class CuttingBoardBlock extends BlockWithEntity {
-    @methodEventSub(world.afterEvents.playerPlaceBlock)
+    @subscribeEvent(world.afterEvents.playerPlaceBlock)
     placeBlock(args: PlayerPlaceBlockAfterEvent) {
         if (args.block.typeId !== "farmersdelight:cutting_board") return;
         const { x, y, z } = args.block.location;
@@ -52,7 +47,7 @@ export class CuttingBoardBlock extends BlockWithEntity {
         entity.setDynamicProperty("farmersdelight:blockEntityItemStackData", '{"item":"undefined"}');
     }
 
-    @methodEventSub(world.afterEvents.playerInteractWithBlock)
+    @subscribeEvent(world.afterEvents.playerInteractWithBlock)
     interactWithBlock(args: PlayerInteractWithBlockAfterEvent): void {
         const block = args.block;
         if (block?.typeId !== "farmersdelight:cutting_board") return;

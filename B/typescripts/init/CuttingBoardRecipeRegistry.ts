@@ -3,7 +3,7 @@ import { subscribeEvent } from "../lib/EventSubscriber";
 import { ReceiveMessageEvent, ScoreboardLoadEvent } from "../lib/Events";
 import {
     CUTTABLE_WITH_AXE_BLOCKS,
-    CUTTABLE_WITH_KINFE_ITEMS,
+    CUTTABLE_WITH_KNIFE_ITEMS,
     CUTTABLE_WITH_AXE_ITEMS,
     CUTTABLE_WITH_SHEARS_ITEMS,
     CUTTABLE_WITH_PICKAXE_BLOCKS,
@@ -18,8 +18,7 @@ class CuttingBoardRegistry {
         for (const objective of objectives) {
             const match: RegExpMatchArray | null = objective.displayName.match(/farmersdelight_(\w+)/);
             if (match) {
-                world
-                    .getDimension("overworld")
+                world.getDimension("overworld")
                     .runCommand(`function farmersdelight/cutting_board_recipe_registries/${match[1]}`);
             }
         }
@@ -53,7 +52,7 @@ class CuttingBoardRegistry {
                         break;
                     case "BlockofKnifeList":
                         CUTTABLE_WITH_KNIFE_BLOCKS.add(identifier);
-                        console.info(identifier, "(block) is cuttable with kinfe");
+                        console.info(identifier, "(block) is cuttable with knife");
                         break;
                         break;
                     case "BlockofShovelList":
@@ -62,8 +61,8 @@ class CuttingBoardRegistry {
                         break;
                 }
             } else {
-                CUTTABLE_WITH_KINFE_ITEMS.add(message);
-                console.info(message, "(item) is cuttable with kinfe");
+                CUTTABLE_WITH_KNIFE_ITEMS.add(message);
+                console.info(message, "(item) is cuttable with knife");
             }
         } catch {}
     }

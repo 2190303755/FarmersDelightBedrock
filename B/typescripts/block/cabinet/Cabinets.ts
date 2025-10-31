@@ -1,9 +1,9 @@
 import { Block, PlayerPlaceBlockAfterEvent, Vector3, world } from "@minecraft/server";
-import { methodEventSub } from "../../lib/eventHelper";
 import { BlockWithEntity } from "../../lib/BlockWithEntity";
+import { subscribeEvent } from "../../lib/EventSubscriber";
 
 export class Cabinets extends BlockWithEntity {
-    @methodEventSub(world.afterEvents.playerPlaceBlock)
+    @subscribeEvent(world.afterEvents.playerPlaceBlock)
     placeBlock(args: PlayerPlaceBlockAfterEvent) {
         const block: Block = args.block;
         const cabinet = block.getComponent("farmersdelight:cabinet")

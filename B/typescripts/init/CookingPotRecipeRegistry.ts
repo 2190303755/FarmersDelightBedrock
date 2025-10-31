@@ -9,8 +9,7 @@ class CookingPotRecipeRegistry {
         for (const objective of objectives) {
             const match: RegExpMatchArray | null = objective.displayName.match(/farmersdelight_(\w+)/);
             if (match) {
-                world
-                    .getDimension("overworld")
+                world.getDimension("overworld")
                     .runCommand(`function farmersdelight/cooking_pot_recipe_registries/${match[1]}`);
             }
         }
@@ -27,4 +26,4 @@ class CookingPotRecipeRegistry {
     }
 }
 
-export const {} = CookingPotRecipeRegistry; // 触发类加载
+export const {} = CookingPotRecipeRegistry;

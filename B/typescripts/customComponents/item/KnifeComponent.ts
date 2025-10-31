@@ -15,9 +15,9 @@ import {
     StartupEvent,
     system,
 } from "@minecraft/server";
-import { methodEventSub } from "../../lib/eventHelper";
 import { horizontalDirectionOf } from "../../lib/EntityUtil";
 import { oppositeOf, toVector3 } from "../../lib/DirectionUtil";
+import { subscribeEvent } from "../../lib/EventSubscriber";
 
 export type BlockLoot = (stack: ItemStack, state: BlockPermutation) => string | undefined;
 
@@ -100,7 +100,7 @@ class KnifeComponent implements ItemCustomComponent {
         }
     }
 
-    @methodEventSub(system.beforeEvents.startup)
+    @subscribeEvent(system.beforeEvents.startup)
     static init(args: StartupEvent) {
         args.itemComponentRegistry.registerCustomComponent("farmersdelight:knife", new KnifeComponent());
     }

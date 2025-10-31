@@ -1,5 +1,11 @@
-import { BlockCustomComponent, CustomComponentParameters, system, world, StartupEvent, Vector3, BlockComponentOnPlaceEvent } from "@minecraft/server";
-import { methodEventSub } from "../../lib/eventHelper";
+import {
+  BlockComponentOnPlaceEvent,
+  BlockCustomComponent,
+  CustomComponentParameters,
+  StartupEvent,
+  system,
+} from "@minecraft/server";
+import { subscribeEvent } from "../../lib/EventSubscriber";
 
 
 export class CabinetComponent implements BlockCustomComponent {
@@ -13,7 +19,7 @@ export class CabinetComponent implements BlockCustomComponent {
         
 }
 export class CabinetComponentRegister{
-    @methodEventSub(system.beforeEvents.startup)
+    @subscribeEvent(system.beforeEvents.startup)
     register(args: StartupEvent){
         args.blockComponentRegistry.registerCustomComponent('farmersdelight:cabinet', new CabinetComponent());
     }

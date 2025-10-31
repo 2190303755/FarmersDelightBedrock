@@ -1,16 +1,4 @@
-
-export const ItemofBlockList: string[] = [
-    "wild_cabbages",
-    "wild_tomatoes",
-    "wild_onions",
-    "wild_carrots",
-    "wild_potatoes",
-    "wild_beetroots",
-    "wild_rice",
-    "brown_mushroom_colony",
-    "red_mushroom_colony"
-];
-export const CUTTABLE_WITH_KINFE_ITEMS: Set<string> =  new Set([
+export const CUTTABLE_WITH_KNIFE_ITEMS: Set<string> =  new Set([
     "minecraft:cake",
     "minecraft:cooked_cod",
     "minecraft:cod",

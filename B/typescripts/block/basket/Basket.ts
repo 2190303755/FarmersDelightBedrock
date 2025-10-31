@@ -1,9 +1,9 @@
 import { Block, PlayerPlaceBlockAfterEvent, Vector3, world } from "@minecraft/server";
-import { methodEventSub } from "../../lib/eventHelper";
 import { BlockWithEntity } from "../../lib/BlockWithEntity";
+import { subscribeEvent } from "../../lib/EventSubscriber";
 
 export class Basket extends BlockWithEntity {
-    @methodEventSub(world.afterEvents.playerPlaceBlock)
+    @subscribeEvent(world.afterEvents.playerPlaceBlock)
     placeBlock(args: PlayerPlaceBlockAfterEvent) {
         const block: Block = args.block;
         if (block.typeId!="farmersdelight:basket") return;
@@ -11,7 +11,7 @@ export class Basket extends BlockWithEntity {
         const entity = super.setBlock(args.block.dimension, { x: x + 0.5, y: y, z: z + 0.5 }, block.typeId);
         entity.nameTag = `tile.${entity.typeId}.name`;
     }
-    @methodEventSub(world.afterEvents.playerPlaceBlock)
+    @subscribeEvent(world.afterEvents.playerPlaceBlock)
     setState(args: PlayerPlaceBlockAfterEvent) {
         const block: Block = args.block;
         if (block.typeId!="farmersdelight:basket") return;

@@ -1,17 +1,17 @@
 import { Entity, PlayerInteractWithEntityAfterEvent, world } from "@minecraft/server";
-import { methodEventSub } from "../../lib/eventHelper";
 import { BlockEntity } from "../../lib/BlockEntity";
+import { subscribeEvent } from "../../lib/EventSubscriber";
 
 
 export class CabinetsBlockEntity extends BlockEntity {
-    @methodEventSub(world.afterEvents.dataDrivenEntityTrigger, { eventTypes: ["farmersdelight:cabinet_tick"] })
+    @subscribeEvent(world.afterEvents.dataDrivenEntityTrigger, { eventTypes: ["farmersdelight:cabinet_tick"] })
     tick(args: any) {
         const entityBlockData = super.blockEntityData(args.entity);
         if (!entityBlockData) return;
         const entity: Entity = entityBlockData.entity;
         super.entityContainerLoot(entityBlockData, entity.typeId);
     }
-    @methodEventSub(world.afterEvents.playerInteractWithEntity)
+    @subscribeEvent(world.afterEvents.playerInteractWithEntity)
     onInteract(args: PlayerInteractWithEntityAfterEvent) {
         const entityBlockData = super.blockEntityData(args.target);
         if (!entityBlockData || !entityBlockData.block.hasTag('farmersdelight:cabinet')) return;
@@ -24,7 +24,7 @@ export class CabinetsBlockEntity extends BlockEntity {
         entity.triggerEvent('farmersdelight:cabinet_interact');
         player.setDynamicProperty('farmersdelight:is_checking_cabinet', true);
     }
-    @methodEventSub(world.afterEvents.dataDrivenEntityTrigger, { eventTypes: ["farmersdelight:cabinet_try_close"] })
+    @subscribeEvent(world.afterEvents.dataDrivenEntityTrigger, { eventTypes: ["farmersdelight:cabinet_try_close"] })
     tryClose(args: any) {
         const entityBlockData = super.blockEntityData(args.entity);
         if (!entityBlockData) return;
