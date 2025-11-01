@@ -69,36 +69,16 @@ export class BlockFood {
         const block: Block = args.block;
         const location = args.block.location;
         const player: Player = args.player;
-        const blockFoodAllTag = block.getTags();
         const inventory = args.player?.getComponent("inventory") as EntityInventoryComponent;
         const container: Container | undefined = inventory?.container
         if (!container) return;
-        for (const tag of blockFoodAllTag) {
-            if (tag == "farmersdelight:blockfood") {
-                if (Number(block.permutation.getState("farmersdelight:food_block_stage")) != 0) {
-                    system.run(() => {
-                        block.dimension.setBlockType({ x: location.x, y: location.y, z: location.z }, "minecraft:air")
-
-                    });
-                };
-                if (Number(block.permutation.getState("farmersdelight:food_block_stage")) == 0) {
-                    system.run(() => {
-                        block.dimension.spawnItem(new ItemStack(block.typeId + "_item"), block.location);
-                        block.dimension.setBlockType({ x: location.x, y: location.y, z: location.z }, "minecraft:air")
-                        player.playSound("dig.cloth")
-                        ItemUtil.hurtItem(container, player.selectedSlotIndex)
-                    });
-                }
-                args.cancel = true;
-            };
-        }
-        if (block.typeId == "farmersdelight:rice_roll_medley_block") {
+        if (block.hasTag("farmersdelight:blockfood")) {
             if (Number(block.permutation.getState("farmersdelight:food_block_stage")) != 0) {
                 system.run(() => {
                     block.dimension.setBlockType({ x: location.x, y: location.y, z: location.z }, "minecraft:air")
 
                 });
-            };
+            }
             if (Number(block.permutation.getState("farmersdelight:food_block_stage")) == 0) {
                 system.run(() => {
                     block.dimension.spawnItem(new ItemStack(block.typeId + "_item"), block.location);
@@ -108,6 +88,6 @@ export class BlockFood {
                 });
             }
             args.cancel = true;
-        };
+        }
     }
 }

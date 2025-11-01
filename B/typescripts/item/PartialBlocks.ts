@@ -28,4 +28,4 @@ class PartialBlocks {
     }
 }
 
-export const {} = PartialBlocks;
+void PartialBlocks;

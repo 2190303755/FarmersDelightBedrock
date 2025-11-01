@@ -26,4 +26,4 @@ class CookingPotRecipeRegistry {
     }
 }
 
-export const {} = CookingPotRecipeRegistry;
+void CookingPotRecipeRegistry;

@@ -18,6 +18,7 @@ import {
 import { horizontalDirectionOf } from "../../lib/EntityUtil";
 import { oppositeOf, toVector3 } from "../../lib/DirectionUtil";
 import { subscribeEvent } from "../../lib/EventSubscriber";
+import { spawnLootAtBlock } from "../../lib/ItemUtil";
 
 export type BlockLoot = (stack: ItemStack, state: BlockPermutation) => string | undefined;
 
@@ -60,8 +61,7 @@ class KnifeComponent implements ItemCustomComponent {
             const permutation = event.minedBlockPermutation;
             const loot = BLOCK_LOOT_TABLE.get(permutation.type.id)?.(stack, permutation);
             if (loot) {
-                const { dimension, x, y, z } = event.block;
-                dimension.runCommand(`loot spawn ${x} ${y} ${z} loot "${loot}"`);
+                spawnLootAtBlock(event.block, loot)
             }
         }
     }
@@ -101,9 +101,9 @@ class KnifeComponent implements ItemCustomComponent {
     }
 
     @subscribeEvent(system.beforeEvents.startup)
-    static init(args: StartupEvent) {
-        args.itemComponentRegistry.registerCustomComponent("farmersdelight:knife", new KnifeComponent());
+    static init(event: StartupEvent) {
+        event.itemComponentRegistry.registerCustomComponent("farmersdelight:knife", new KnifeComponent());
     }
 }
 
-export const {} = KnifeComponent;
+void KnifeComponent;

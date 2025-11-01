@@ -68,4 +68,4 @@ class CuttingBoardRegistry {
     }
 }
 
-export const {} = CuttingBoardRegistry
+void CuttingBoardRegistry

@@ -1,7 +1,7 @@
 import {
     Block,
     Container,
-    ContainerSlot,
+    ContainerSlot, Dimension,
     EnchantmentType,
     Entity,
     EntityComponentTypes,
@@ -52,7 +52,7 @@ export function takeItem(container: Container, slot: number, max: number = 1): n
 export function takeEquippedItem(
     entity: Entity,
     slot: EquipmentSlot = EquipmentSlot.Mainhand,
-    max: number = 1
+    max: number = 1,
 ): number {
     const reference = entity.getComponent(EntityComponentTypes.Equippable)?.getEquipmentSlot(slot);
     return reference ? takeItemInSlot(reference, max) : max;
@@ -84,7 +84,7 @@ export function spawnItem(
     source: Block | Entity,
     item: string | ItemType,
     amount: number = 1,
-    pos?: Vector3
+    pos?: Vector3,
 ): Entity | undefined {
     return spawnStack(source, new ItemStack(item, amount), pos);
 }
@@ -95,12 +95,20 @@ export function spawnStack(
     pos: Vector3 = source instanceof Entity
         ? source.location
         : Math.random() < 0.5
-        ? source.center()
-        : source.bottomCenter()
+            ? source.center()
+            : source.bottomCenter(),
 ): Entity | undefined {
     try {
         return source.dimension.spawnItem(stack, pos);
     } catch {
         return undefined;
     }
+}
+
+export function spawnLoot(dimension: Dimension, x: number, y: number, z: number, loot: string) {
+    dimension.runCommand(`loot spawn ${x} ${y} ${z} loot "${loot}"`);
+}
+
+export function spawnLootAtBlock(block: Block, loot: string, location: Vector3 = block.center()) {
+    spawnLoot(block.dimension, location.x, location.y, location.z, loot);
 }

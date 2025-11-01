@@ -13,7 +13,7 @@ import {
     world,
 } from "@minecraft/server";
 import { hasLimitedMaterials, horizontalDirectionOf } from "../lib/EntityUtil";
-import { hurtItem, enchantmentLevelOf } from "../lib/ItemUtil";
+import { hurtItem, enchantmentLevelOf, spawnLoot, spawnLootAtBlock } from "../lib/ItemUtil";
 import { subscribeEvent } from "../lib/EventSubscriber";
 import { oppositeOf } from "../lib/DirectionUtil";
 
@@ -134,8 +134,7 @@ class Knife {
             const permutation = args.brokenBlockPermutation;
             const loot = BLOCK_LOOT_TABLE.get(permutation.type.id)?.(stack, permutation);
             if (loot) {
-                const { dimension, x, y, z }: Block = args.block;
-                dimension.runCommand(`loot spawn ${x} ${y} ${z} loot "${loot}"`);
+                spawnLootAtBlock(args.block, loot);
             }
         }
     }
@@ -169,4 +168,4 @@ class Knife {
     }
 }
 
-export const {} = Knife;
+void Knife;

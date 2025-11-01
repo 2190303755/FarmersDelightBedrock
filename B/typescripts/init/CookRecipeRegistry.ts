@@ -23,4 +23,4 @@ class CookRecipeRegistry {
     }
 }
 
-export const {} = CookRecipeRegistry;
+void CookRecipeRegistry;

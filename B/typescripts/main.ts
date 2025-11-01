@@ -11,9 +11,10 @@ import "./init/CookingPotRecipeRegistry";
 import "./init/CuttingBoardRecipeRegistry";
 import "./init/CookRecipeRegistry";
 import "./item/Food";
+import "./customComponents/block/DishComponent"
 import { Cabinets } from "./block/cabinet/Cabinets";
 import { CabinetsBlockEntity } from "./block/cabinet/CabinetsBlockEntity";
-import { RiceBlock } from "./block/Rice";
+import "./block/RiceBlock";
 import { FarmersBook } from "./item/FarmersBook";
 import { BlockFood } from "./block/BlockFood";
 import { RiceRollMedleyComponentRegister } from "./customComponents/block/RiceRollMedleyComponent";
@@ -83,6 +84,5 @@ new CabinetsBlockEntity();
 new Basket();
 new BasketBlockEntity();
 
-new RiceBlock();
 new FarmersBook();
 new BlockFood();

@@ -123,4 +123,4 @@ class Food {
     }
 }
 
-export const {} = Food
+void Food
