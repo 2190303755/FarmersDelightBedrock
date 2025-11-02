@@ -1,4 +1,5 @@
 import {
+    Container,
     Direction,
     Entity,
     EntityComponentTypes,
@@ -22,9 +23,14 @@ export function horizontalDirectionOf(entity: Entity): Direction {
     return Direction.North;
 }
 
-export function dropsItems(entity: Entity) {
-    const container = entity.getComponent(EntityComponentTypes.Inventory)?.container;
-    if (!container) return;
+export function dropsItems(
+    entity: Entity,
+    container?: Container
+) {
+    if (!container) {
+        container = entity.getComponent(EntityComponentTypes.Inventory)?.container
+        if (!container) return;
+    }
     const { dimension, location } = entity;
     for (let i = 0, size = container.size; i < size; ++i) {
         const stack = container.getItem(i);

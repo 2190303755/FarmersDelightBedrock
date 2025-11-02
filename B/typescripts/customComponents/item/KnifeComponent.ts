@@ -16,7 +16,7 @@ import {
     system,
 } from "@minecraft/server";
 import { horizontalDirectionOf } from "../../lib/EntityUtil";
-import { oppositeOf, toVector3 } from "../../lib/DirectionUtil";
+import { oppositeOf, offsetByDirection } from "../../lib/DirectionUtil";
 import { subscribeEvent } from "../../lib/EventSubscriber";
 import { spawnLootAtBlock } from "../../lib/ItemUtil";
 
@@ -77,7 +77,7 @@ class KnifeComponent implements ItemCustomComponent {
         const direction = face === Direction.Up || face === Direction.Down
             ? oppositeOf(horizontalDirectionOf(entity))
             : face;
-        const vector = toVector3(direction);
+        const offset = offsetByDirection(direction);
         block.setPermutation(
             BlockPermutation.resolve("minecraft:carved_pumpkin", {
                 "minecraft:cardinal_direction": direction.toLowerCase(),
@@ -86,16 +86,16 @@ class KnifeComponent implements ItemCustomComponent {
         const { dimension, x, y, z } = block;
         dimension.playSound("pumpkin.carve", block);
         const item = dimension.spawnItem(new ItemStack("minecraft:pumpkin_seeds", 4), {
-            x: x + 0.5 + vector.x * 0.65,
+            x: x + 0.5 + offset.x * 0.65,
             y: y + 0.1,
-            z: z + 0.5 + vector.z * 0.65,
+            z: z + 0.5 + offset.z * 0.65,
         });
         if (item) {
             item.clearVelocity();
             item.applyImpulse({
-                x: 0.05 * vector.x + Math.random() * 0.02,
+                x: 0.05 * offset.x + Math.random() * 0.02,
                 y: 0.05,
-                z: 0.05 * vector.z + Math.random() * 0.02,
+                z: 0.05 * offset.z + Math.random() * 0.02,
             });
         }
     }

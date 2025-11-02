@@ -12,8 +12,7 @@ import "./init/CuttingBoardRecipeRegistry";
 import "./init/CookRecipeRegistry";
 import "./item/Food";
 import "./customComponents/block/DishComponent"
-import { Cabinets } from "./block/cabinet/Cabinets";
-import { CabinetsBlockEntity } from "./block/cabinet/CabinetsBlockEntity";
+import "./block/CabinetsBlockEntity";
 import "./block/RiceBlock";
 import { FarmersBook } from "./item/FarmersBook";
 import { BlockFood } from "./block/BlockFood";
@@ -34,16 +33,14 @@ import { StoveComponentRegister } from "./customComponents/block/StoveComponent"
 import "./item/PartialBlocks";
 import { CuttableComponentRegister } from "./customComponents/item/CuttableComponent";
 import { CookableComonentRegister } from "./customComponents/item/CookableComponent";
-import { CabinetComponentRegister } from "./customComponents/block/CabinetComponent.ts";
+import "./customComponents/block/BlockEntityComponent";
 import { IncreaseProductionComponentRegister } from "./customComponents/item/IncreaseProductionComponent";
 import { SeedComponent } from "./customComponents/item/SeedComponent";
 import { PieComponent } from "./customComponents/block/PieCompostComonent";
-import { Basket } from "./block/basket/Basket";
-import { BasketBlockEntity } from "./block/basket/BasketBlockEntity";
+import "./block/BasketBlockEntity";
 import "./customComponents/item/KnifeComponent"
 
 new CropComponentRegister();
-new CabinetComponentRegister();
 new WildCropComponent();
 new StoveComponentRegister();
 new PieComponent();
@@ -77,12 +74,6 @@ new StoveBlockEntity();
 
 new Skillet();
 new SkilletEntity();
-
-new Cabinets();
-new CabinetsBlockEntity();
-
-new Basket();
-new BasketBlockEntity();
 
 new FarmersBook();
 new BlockFood();
