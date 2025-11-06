@@ -1,6 +1,6 @@
 import { ScoreboardObjective, world } from "@minecraft/server";
 import { subscribeEvent } from "../lib/EventSubscriber";
-import { ReceiveMessageEvent, ScoreboardLoadEvent } from "../lib/Events";
+import { ReceiveScriptMessageEvent, ScoreboardLoadEvent } from "../lib/Events";
 import {
     CUTTABLE_WITH_AXE_BLOCKS,
     CUTTABLE_WITH_KNIFE_ITEMS,
@@ -23,7 +23,7 @@ class CuttingBoardRegistry {
             }
         }
     }
-    @subscribeEvent(ReceiveMessageEvent, "farmersdelight:cutting_board_recipe")
+    @subscribeEvent(ReceiveScriptMessageEvent, "farmersdelight:cutting_board_recipe")
     static registerCuttable(message: string) {
         try {
             const splited = message.split("?");

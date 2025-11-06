@@ -40,7 +40,3 @@ export function dropsItems(
     }
     container.clearAll();
 }
-
-export function discard(entity: Entity) {
-    system.run(() => entity.remove());
-}

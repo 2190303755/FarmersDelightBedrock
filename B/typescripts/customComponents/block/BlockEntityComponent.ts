@@ -1,7 +1,7 @@
 import {
     BlockComponentOnPlaceEvent,
     BlockCustomComponent,
-    CustomComponentParameters, EntityTypes,
+    CustomComponentParameters,
     StartupEvent,
     system,
 } from "@minecraft/server";

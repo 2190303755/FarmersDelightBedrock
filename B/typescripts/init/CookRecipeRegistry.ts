@@ -1,6 +1,6 @@
 import { ScoreboardObjective, world } from "@minecraft/server";
 import { subscribeEvent } from "../lib/EventSubscriber";
-import { ReceiveMessageEvent, ScoreboardLoadEvent } from "../lib/Events";
+import { ReceiveScriptMessageEvent, ScoreboardLoadEvent } from "../lib/Events";
 import { SMELTABLES } from "../data/Smeltables";
 
 class CookRecipeRegistry {
@@ -14,7 +14,7 @@ class CookRecipeRegistry {
             }
         }
     }
-    @subscribeEvent(ReceiveMessageEvent, "farmersdelight:cook")
+    @subscribeEvent(ReceiveScriptMessageEvent, "farmersdelight:cook")
     static registerRecipe(message: string) {
         try {
             SMELTABLES.add(message);

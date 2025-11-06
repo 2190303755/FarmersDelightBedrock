@@ -14,6 +14,10 @@ import {
     Vector3,
 } from "@minecraft/server";
 
+export function matchStack(tagOrId: string, stack?: ItemStack) {
+    return stack && (tagOrId[0] === "#" ? stack.hasTag(tagOrId.substring(1)) : stack.typeId === tagOrId)
+}
+
 export function enchantmentLevelOf(stack: ItemStack | undefined, enchantment: string | EnchantmentType): number {
     const instance = stack?.getComponent(ItemComponentTypes.Enchantable)?.getEnchantment(enchantment);
     return instance ? instance.level : 0;
@@ -32,7 +36,8 @@ export function hurtItem(container: Container, index: number, damage: number = 1
 }
 
 // 返回仍需取出的物品量
-export function takeItemInSlot(slot: ContainerSlot, max: number): number {
+export function takeItemInSlot(slot: ContainerSlot, max: number, nullable: boolean = true): number {
+    if (nullable && !slot.hasItem()) return max;
     const remaining = slot.amount;
     if (remaining > max) {
         slot.amount = remaining - max;
@@ -45,7 +50,7 @@ export function takeItemInSlot(slot: ContainerSlot, max: number): number {
 // 返回仍需取出的物品量
 export function takeItem(container: Container, slot: number, max: number = 1): number {
     const reference = container.getSlot(slot);
-    return reference ? takeItemInSlot(reference, max) : max;
+    return reference ? takeItemInSlot(reference, max, true) : max;
 }
 
 // 返回仍需取出的物品量
@@ -55,7 +60,7 @@ export function takeEquippedItem(
     max: number = 1,
 ): number {
     const reference = entity.getComponent(EntityComponentTypes.Equippable)?.getEquipmentSlot(slot);
-    return reference ? takeItemInSlot(reference, max) : max;
+    return reference ? takeItemInSlot(reference, max, true) : max;
 }
 
 export function consumeItem(player: Player, slot: number = player.selectedSlotIndex, convertTo?: ItemStack) {

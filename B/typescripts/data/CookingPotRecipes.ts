@@ -1,7 +1,95 @@
-import { CookingPotRecipe } from "../lib/CookingPotRecipe";
+import { RecipeManager } from "../lib/RecipeManager";
+import {
+    compileIngredientSpec, compileInlineIngredient, compileInlineIngredients,
+    Ingredient,
+    IngredientSpec,
+    inlineIngredient,
+    InlineIngredientSpec,
+    StackSpec,
+} from "../lib/Ingredients";
+import { registerContainer } from "./ItemContainers";
 
-export const COOKING_POT_RECIPES: CookingPotRecipe[] = [
-    //finish
+
+export type RecipeSpecV1 = {
+    identifer?: string; // sic
+    identifier?: string;
+    tags: string[];
+    priority?: number;
+    time: number;
+    container?: IngredientSpec;
+    experience?: number;
+    ingredients: IngredientSpec[];
+    result: StackSpec;
+}
+
+export type RecipeSpecV2 = {
+    format: 2;
+    identifier?: string;
+    time: number;
+    priority?: number;
+    experience?: number;
+    ingredients: InlineIngredientSpec[];
+    result: StackSpec;
+}
+
+export interface CookingPotRecipe {
+    readonly time: number;
+    readonly priority?: number;
+    readonly experience?: number;
+    readonly ingredients: Ingredient[];
+    readonly result: StackSpec;
+}
+
+type UnsortedIngredients = [number, Ingredient][]
+
+// 提前排序，使最复杂的原料更早处理以便触发剪枝
+function sortIngredients(complied: UnsortedIngredients) {
+    complied.sort((left, right) => right[0] - left[0])
+    for (const index in complied) {
+        (complied as unknown as Ingredient[])[index] = complied[index][1];
+    }
+}
+
+export function populateV1(spec: RecipeSpecV1): CookingPotRecipe {
+    const container = spec.container;
+    if (container) {
+        if (Array.isArray(container)) {
+            const item = spec.result.item as string;
+            for (const entry of container) {
+                registerContainer(item, inlineIngredient(entry));
+            }
+        } else {
+            registerContainer(spec.result.item as string, inlineIngredient(container));
+        }
+    }
+    const ingredients = spec.ingredients;
+    for (const index in ingredients) {
+        const ingredient = compileIngredientSpec(ingredients[index]);
+        (ingredients as unknown as UnsortedIngredients)[index] = [ingredient.complexity(), ingredient]
+    }
+    sortIngredients(ingredients as unknown as UnsortedIngredients);
+    delete (spec as any).tags;
+    delete spec.container;
+    return spec as unknown as CookingPotRecipe;
+}
+
+export function populateV2(spec: RecipeSpecV2): CookingPotRecipe {
+    const ingredients = spec.ingredients;
+    for (const index in ingredients) {
+        const tagOrId = ingredients[index];
+        const ingredient = Array.isArray(tagOrId)
+            ? compileInlineIngredients(tagOrId)
+            : compileInlineIngredient(tagOrId);
+        (ingredients as unknown as UnsortedIngredients)[index] = [ingredient.complexity(), ingredient]
+    }
+    sortIngredients(ingredients as unknown as UnsortedIngredients);
+    delete (spec as any).format;
+    return spec as unknown as CookingPotRecipe;
+}
+
+export const COOKING_POT_RECIPES: RecipeManager<CookingPotRecipe> = new RecipeManager();
+
+([ //finish
     {
         identifier: "farmersdelight:bone_broth",
         tags: ["cooking_pot"],
@@ -91,7 +179,6 @@ export const COOKING_POT_RECIPES: CookingPotRecipe[] = [
                 item: "farmersdelight:milk_bottle",
             },
         ],
-        recipe_book_tab: "drinks",
         result: {
             item: "farmersdelight:hot_cocoa",
         },
@@ -130,7 +217,6 @@ export const COOKING_POT_RECIPES: CookingPotRecipe[] = [
                 },
             ],
         ],
-        recipe_book_tab: "misc",
         result: {
             item: "farmersdelight:dumplings",
             count: 2,
@@ -151,7 +237,6 @@ export const COOKING_POT_RECIPES: CookingPotRecipe[] = [
                 tag: "farmersdelight:is_rice",
             },
         ],
-        recipe_book_tab: "misc",
         result: {
             item: "farmersdelight:cooked_rice",
         },
@@ -179,7 +264,6 @@ export const COOKING_POT_RECIPES: CookingPotRecipe[] = [
                 item: "minecraft:potato",
             },
         ],
-        recipe_book_tab: "meals",
         result: {
             item: "farmersdelight:beef_stew",
         },
@@ -215,7 +299,6 @@ export const COOKING_POT_RECIPES: CookingPotRecipe[] = [
                 { item: "better_on_bedrock:tomato_seed" },
             ],
         ],
-        recipe_book_tab: "meals",
         result: {
             item: "farmersdelight:chicken_soup",
         },
@@ -247,7 +330,6 @@ export const COOKING_POT_RECIPES: CookingPotRecipe[] = [
                 item: "minecraft:carrot",
             },
         ],
-        recipe_book_tab: "misc",
         result: {
             item: "farmersdelight:vegetable_soup",
         },
@@ -271,7 +353,6 @@ export const COOKING_POT_RECIPES: CookingPotRecipe[] = [
                 item: "farmersdelight:tomato_sauce",
             },
         ],
-        recipe_book_tab: "meals",
         result: {
             item: "farmersdelight:fish_stew",
         },
@@ -303,7 +384,6 @@ export const COOKING_POT_RECIPES: CookingPotRecipe[] = [
                 item: "minecraft:carrot",
             },
         ],
-        recipe_book_tab: "misc",
         result: {
             item: "farmersdelight:fried_rice",
         },
@@ -333,7 +413,6 @@ export const COOKING_POT_RECIPES: CookingPotRecipe[] = [
             },
             [{ tag: "farmersdelight:is_raw_porkchop" }, { item: "minecraft:porkchop" }],
         ],
-        recipe_book_tab: "misc",
         result: {
             item: "farmersdelight:pumpkin_soup",
         },
@@ -385,7 +464,6 @@ export const COOKING_POT_RECIPES: CookingPotRecipe[] = [
                 { item: "better_on_bedrock:tomato_seed" },
             ],
         ],
-        recipe_book_tab: "meals",
         result: {
             item: "farmersdelight:baked_cod_stew",
         },
@@ -411,7 +489,6 @@ export const COOKING_POT_RECIPES: CookingPotRecipe[] = [
                 tag: "farmersdelight:is_pasta",
             },
         ],
-        recipe_book_tab: "meals",
         result: {
             item: "farmersdelight:pasta_with_meatballs",
         },
@@ -440,7 +517,6 @@ export const COOKING_POT_RECIPES: CookingPotRecipe[] = [
                 tag: "farmersdelight:is_pasta",
             },
         ],
-        recipe_book_tab: "meals",
         result: {
             item: "farmersdelight:pasta_with_mutton_chop",
         },
@@ -481,7 +557,6 @@ export const COOKING_POT_RECIPES: CookingPotRecipe[] = [
                 { item: "better_on_bedrock:tomato_seed" },
             ],
         ],
-        recipe_book_tab: "meals",
         result: {
             item: "farmersdelight:vegetable_noodles",
         },
@@ -511,7 +586,6 @@ export const COOKING_POT_RECIPES: CookingPotRecipe[] = [
             },
             [{ item: "minecraft:cod" }, { tag: "farmersdelight:is_raw_fish" }, { tag: "minecraft:salmon" }],
         ],
-        recipe_book_tab: "meals",
         result: {
             item: "farmersdelight:squid_ink_pasta",
         },
@@ -557,7 +631,6 @@ export const COOKING_POT_RECIPES: CookingPotRecipe[] = [
                 { item: "better_on_bedrock:tomato_seed" },
             ],
         ],
-        recipe_book_tab: "meals",
         result: {
             item: "farmersdelight:stuffed_pumpkin_block_item",
         },
@@ -591,7 +664,6 @@ export const COOKING_POT_RECIPES: CookingPotRecipe[] = [
                 },
             ],
         ],
-        recipe_book_tab: "meals",
         result: {
             item: "minecraft:rabbit_stew",
         },
@@ -650,7 +722,6 @@ export const COOKING_POT_RECIPES: CookingPotRecipe[] = [
                 { item: "better_on_bedrock:gabage_leaves" },
             ],
         ],
-        recipe_book_tab: "meals",
         result: {
             item: "farmersdelight:cabbage_rolls",
         },
@@ -684,7 +755,6 @@ export const COOKING_POT_RECIPES: CookingPotRecipe[] = [
                 },
             ],
         ],
-        recipe_book_tab: "meals",
         result: {
             item: "farmersdelight:noodle_soup",
         },
@@ -721,7 +791,6 @@ export const COOKING_POT_RECIPES: CookingPotRecipe[] = [
                 { item: "better_on_bedrock:raw_mutton_chops" },
             ],
         ],
-        recipe_book_tab: "meals",
         result: {
             item: "farmersdelight:dog_food",
         },
@@ -750,9 +819,11 @@ export const COOKING_POT_RECIPES: CookingPotRecipe[] = [
                 item: "farmersdelight:rice",
             },
         ],
-        recipe_book_tab: "meals",
         result: {
             item: "farmersdelight:mushroom_rice",
         },
     },
-];
+] as RecipeSpecV1[]).forEach(spec => {
+    COOKING_POT_RECIPES.addRecipe(populateV1(spec));
+    console.info("Registered cooking pot recipe for", spec.result.item);
+});

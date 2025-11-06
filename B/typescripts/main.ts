@@ -10,6 +10,7 @@ import "./item/Knife";
 import "./init/CookingPotRecipeRegistry";
 import "./init/CuttingBoardRecipeRegistry";
 import "./init/CookRecipeRegistry";
+import "./init/ItemContainerRegistry";
 import "./item/Food";
 import "./customComponents/block/DishComponent"
 import "./block/CabinetsBlockEntity";
@@ -34,6 +35,7 @@ import "./item/PartialBlocks";
 import { CuttableComponentRegister } from "./customComponents/item/CuttableComponent";
 import { CookableComonentRegister } from "./customComponents/item/CookableComponent";
 import "./customComponents/block/BlockEntityComponent";
+import "./customComponents/block/CookingPotComponent"
 import { IncreaseProductionComponentRegister } from "./customComponents/item/IncreaseProductionComponent";
 import { SeedComponent } from "./customComponents/item/SeedComponent";
 import { PieComponent } from "./customComponents/block/PieCompostComonent";

@@ -3,10 +3,6 @@
     "minecraft:block": {
         "description": {
             "identifier": "farmersdelight:cooking_pot",
-            "menu_category": {
-                "category": "items",
-                "group": "farmersdelight:itemGroup.name.cooker"
-            },
             "traits": {
                 "minecraft:placement_direction": {
                     "enabled_states": [
@@ -73,6 +69,7 @@
                 "allows_wire_to_step_down": false
             },
             "farmersdelight:interact": {},
+            "farmersdelight:cooking_pot": "farmersdelight:cooking_pot",
             "minecraft:destructible_by_mining": {
                 "seconds_to_destroy": 1
             },

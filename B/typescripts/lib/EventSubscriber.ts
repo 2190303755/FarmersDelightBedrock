@@ -1,4 +1,4 @@
-import { Block, Entity, EntityDataDrivenTriggerEventOptions, world } from "@minecraft/server";
+import { Block, Entity, EntityDataDrivenTriggerEventOptions, system, world } from "@minecraft/server";
 import { getAttachedBlock } from "./BlockEntity";
 import { getBlockEntityType } from "./BlockWithEntity";
 
@@ -20,8 +20,9 @@ export function subscribeEvent<E, T>(event: EventSignal<E, T>, filter?: T)  {
 
 export function attachedBlockEntity(filter: EntityDataDrivenTriggerEventOptions) {
     return function(constructor: {
+        onDiscard: (entity: Entity) => "DO NOT DISCARD" | undefined
+        onRemove?: (entityId: string) => void
         onTick?: (entity: Entity, block: Block) => void
-        onDiscard: (entity: Entity) => void
     }) {
         world.afterEvents.dataDrivenEntityTrigger.subscribe((event) => {
             const entity = event.entity;
@@ -30,8 +31,15 @@ export function attachedBlockEntity(filter: EntityDataDrivenTriggerEventOptions)
             if (getBlockEntityType(block)?.id === entity.typeId) {
                 constructor.onTick?.(entity, block);
             } else {
-                constructor.onDiscard(entity);
+                if (constructor.onDiscard(entity) !== "DO NOT DISCARD") { // 不用boolean是为了防手贱
+                    system.run(() => entity.remove());
+                }
             }
-        }, filter)
+        }, filter);
+        if (constructor.onRemove) {
+            world.afterEvents.entityRemove.subscribe((event) => {
+                constructor.onRemove?.(event.removedEntityId);
+            }, filter)
+        }
     };
 }

@@ -1,7 +1,12 @@
 import { ScoreboardObjective, world } from "@minecraft/server";
 import { subscribeEvent } from "../lib/EventSubscriber";
-import { ReceiveMessageEvent, ScoreboardLoadEvent } from "../lib/Events";
-import { COOKING_POT_RECIPES } from "../data/CookingPotRecipes";
+import { ReceiveScriptMessageEvent, ScoreboardLoadEvent } from "../lib/Events";
+import {
+    COOKING_POT_RECIPES,
+    populateV1, populateV2,
+    RecipeSpecV1,
+    RecipeSpecV2,
+} from "../data/CookingPotRecipes";
 
 class CookingPotRecipeRegistry {
     @subscribeEvent(ScoreboardLoadEvent)
@@ -14,15 +19,25 @@ class CookingPotRecipeRegistry {
             }
         }
     }
-    @subscribeEvent(ReceiveMessageEvent, "farmersdelight:cooking_pot_recipe")
+
+    @subscribeEvent(ReceiveScriptMessageEvent, "farmersdelight:cooking_pot_recipe")
     static registerRecipe(message: string) {
+        let spec;
         try {
-            const json: any = JSON.parse(message);
-            if (!(json.time || json.ingredients || json.result)) return;
-            if (!json.ingredients.length || !json.result.item) return;
-            COOKING_POT_RECIPES.push(json);
-            console.info("Registered cooking pot recipe with id", json.identifer ?? json.identifier);
-        } catch {}
+            spec = JSON.parse(message) as RecipeSpecV1 | RecipeSpecV2;
+        } catch (error) {
+            console.error("Failed to parse cooking pot recipe", error);
+            return;
+        }
+        if (!spec.time) return;
+        if (!spec.result || !spec.result.item) return;
+        if (!spec.ingredients || !spec.ingredients.length) return;
+        if ((spec as RecipeSpecV2).format === 2) {
+            COOKING_POT_RECIPES.addRecipe(populateV2(spec as RecipeSpecV2));
+        } else {
+            COOKING_POT_RECIPES.addRecipe(populateV1(spec as RecipeSpecV1));
+        }
+        console.info("Registered cooking pot recipe for", spec.result.item);
     }
 }
 
