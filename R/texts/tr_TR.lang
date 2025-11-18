@@ -224,8 +224,8 @@ farmersdelight.tips.false_tool=Belki Başka bir Aletle...
 farmersdelight.tips.cant_cut=Bu Kesilebilir Durmuyor...
 farmersdelight.blockfood.minecraft:bowl=Bunu Yemek için Kase Gerekli.
 farmersdelight.skillet.invalid_item=Bu Pişirilebilir Durmuyor...
-farmersdelight.tooltip.cooking_pot.single_serving=Şundan 1 porsiyon içerir: %s
-farmersdelight.tooltip.cooking_pot.many_servings=Şundan %s porsiyon içerir: %s
+farmersdelight.tooltip.cooking_pot.single_serving=§rŞundan 1 porsiyon içerir: %s
+farmersdelight.tooltip.cooking_pot.many_servings=§rŞundan %s porsiyon içerir: %s
 
 pack.name=Farmer's Delight[RP]
 pack.description=It's time to farm a little bit of everything! Supported version is 1.21.111+

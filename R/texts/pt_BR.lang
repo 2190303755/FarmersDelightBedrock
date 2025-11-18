@@ -223,8 +223,8 @@ farmersdelight.tips.false_tool=Talvez com outra ferramenta...
 farmersdelight.tips.cant_cut=Isto não parece cortável...
 farmersdelight.blockfood.minecraft:bowl=Você precisa de uma tigela para comer isto.
 farmersdelight.skillet.invalid_item=Isto não pode ser cozinhado...
-farmersdelight.tooltip.cooking_pot.single_serving=Contém 1 porção de: %s
-farmersdelight.tooltip.cooking_pot.many_servings=Contém %s porções de: %s
+farmersdelight.tooltip.cooking_pot.single_serving=§rContém 1 porção de: %s
+farmersdelight.tooltip.cooking_pot.many_servings=§rContém %s porções de: %s
 
 pack.name=Farmer's Delight[RP]
 pack.description=É hora de cultivar um pouco de tudo! Versão suportada: 1.21.111+

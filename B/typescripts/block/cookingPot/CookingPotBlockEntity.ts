@@ -5,12 +5,11 @@ import {
     Entity,
     EntityComponentTypes,
     ItemStack,
-    system,
     Vector3,
 } from "@minecraft/server";
 import { COOKING_POT_RECIPES, CookingPotRecipe } from "../../data/CookingPotRecipes";
 import { isHeated } from "../../data/Heaters";
-import { attachedBlockEntity } from "../../lib/EventSubscriber";
+import { attachedBlockEntity, subscribeEvent } from "../../lib/EventSubscriber";
 import { hasMatches, makeStack, StackSpec } from "../../lib/Ingredients";
 import { hasContainer, isContainer } from "../../data/ItemContainers";
 import { takeItemInSlot } from "../../lib/ItemUtil";
@@ -166,6 +165,11 @@ export class CookingPotBlockEntity {
                     entity.setDynamicProperty("farmersdelight:totalTime", context.total);
                 } else if (++context.time >= recipe.time && assemble(recipe.result, cooked)) {
                     context.time = 0;
+                    if (recipe.experience) {
+                        // 先记着罢
+                        const current = Number(entity.getDynamicProperty("farmersdelight:experience"))
+                        entity.setProperty("farmersdelight:experience", Number.isNaN(current) ? recipe.experience : recipe.experience + current);
+                    }
                     for (let i = 0; i < 6; ++i) {
                         const slot = container.getSlot(i);
                         if (!slot.hasItem()) continue;
@@ -180,16 +184,19 @@ export class CookingPotBlockEntity {
             } else {
                 context.time = 0;
             }
-            if (system.currentTick % 15 == 0) {
-                const random = Math.floor(Math.random() * 10);
+            if (Math.random() < 0.04) { // 触发间隔大于15刻的概率约为50%
                 const { x, y, z }: Vector3 = entity.location;
-                block.dimension.spawnParticle(`farmersdelight:steam_${random}`, { x: x, y: y + 1, z: z });
                 block.dimension.spawnParticle("farmersdelght:bubble", { x: x, y: y + 0.63, z: z });
             }
-            if (system.currentTick % 80 == 0) {
-                container?.getItem(6)
-                    ? entity.runCommand("playsound block.farmersdelight.cooking_pot.boil_soup @a ~ ~ ~ 1 1")
-                    : entity.runCommand("playsound block.farmersdelight.cooking_pot.boil_water @a ~ ~ ~ 1 1");
+            if (Math.random() < 0.02) { // 总之概率是上面的一半
+                const { x, y, z }: Vector3 = entity.location;
+                block.dimension.spawnParticle(`farmersdelight:steam_${Math.floor(Math.random() * 10)}`, { x: x, y: y + 1, z: z });
+            }
+            if (Math.random() < 0.008) { // 触发间隔大于80刻的概率约为50%
+                entity.runCommand(cooked.hasItem()
+                    ? "playsound block.farmersdelight.cooking_pot.boil_soup @a ~ ~ ~ 1 1"
+                    : "playsound block.farmersdelight.cooking_pot.boil_water @a ~ ~ ~ 1 1"
+                );
             }
             if (container.getItem(10)?.typeId !== "farmersdelight:fire_1") {
                 container.setItem(10, new ItemStack("farmersdelight:fire_1"));
@@ -211,3 +218,5 @@ export class CookingPotBlockEntity {
         }
     }
 }
+
+void CookingPotBlockEntity;

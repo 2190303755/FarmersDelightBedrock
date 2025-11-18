@@ -1,5 +1,5 @@
 import { CookingPotBlock } from "./block/cookingPot/CookingPotBlock";
-import { CookingPotBlockEntity } from "./block/cookingPot/CookingPotBlockEntity";
+import "./block/cookingPot/CookingPotBlockEntity";
 import { CuttingBoardBlock } from "./block/cuttingBoard/CuttingBoardBlock";
 import { CuttingBoardBlockEntity } from "./block/cuttingBoard/CuttingBoardBlockEntity";
 import { StoveBlock } from "./block/stove/StoveBlock";
@@ -66,7 +66,6 @@ new ColoniesComonentRegister();
 new RiceSeedComponentRegister();
 
 new CookingPotBlock();
-new CookingPotBlockEntity();
 
 new CuttingBoardBlock();
 new CuttingBoardBlockEntity();
