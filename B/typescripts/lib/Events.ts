@@ -17,7 +17,7 @@ export const PlayerTickEvent = {
     },
 } as const;
 
-export const ReceiveMessageEvent = {
+export const ReceiveScriptMessageEvent = {
     subscribe(callback: (message: string) => void, identifier: string) {
         MESSAGE_HANDLERS.set(identifier, callback);
     },

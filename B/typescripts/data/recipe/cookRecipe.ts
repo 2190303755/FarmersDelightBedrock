@@ -8,7 +8,6 @@ const vanillaItemList = [
     "minecraft:brown_egg",
     "minecraft:blue_egg",
     "minecraft:egg",
-    "minecraft:beef",
     "minecraft:mutton",
     "minecraft:porkchop",
     "minecraft:potato",
@@ -39,7 +38,6 @@ export interface TaggedCookingRecipe extends CookingRecipe, SortableRecipe {
     readonly ingredientTag: string;
 }
 
-const RECIPES_BY_TAG: SortableRecipeManager<TaggedCookingRecipe> = new SortableRecipeManager();
 const RECIPES_BY_ID: Map<string, CookingRecipe> = new Map([
     ["minecraft:beef", { result: "minecraft:cooked_beef", time: 200, exp: 0.35 }],
     ["minecraft:porkchop", { result: "minecraft:cooked_porkchop", time: 200, exp: 0.35 }],
@@ -56,9 +54,14 @@ const RECIPES_BY_ID: Map<string, CookingRecipe> = new Map([
     ["farmersdelight:minced_beef", { result: "farmersdelight:beef_patty", time: 200, exp: 0.35 }],
     ["farmersdelight:mutton_chops", { result: "farmersdelight:cooked_mutton_chops", time: 200, exp: 0.35 }],
     ["farmersdelight:salmon_slice", { result: "farmersdelight:cooked_salmon_slice", time: 200, exp: 0.35 }],
-
-    ["#minecraft:egg", { result: "farmersdelight:fried_egg", time: 200, exp: 0.35 }],
 ]);
+const RECIPES_BY_TAG: SortableRecipeManager<TaggedCookingRecipe> = new SortableRecipeManager();
+RECIPES_BY_TAG.addSortableRecipe({
+    ingredientTag: "minecraft:egg",
+    result: "farmersdelight:fried_egg",
+    time: 200,
+    exp: 0.35,
+});
 
 export function registerCookable(tagOrId: string, recipe: CookingRecipe) {
     if (tagOrId[0] === "#") {

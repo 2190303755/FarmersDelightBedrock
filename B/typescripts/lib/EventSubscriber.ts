@@ -28,18 +28,24 @@ export function subscribeEvent<E, T>(event: EventSignal<E, T>, filter?: T) {
 export function attachedBlockEntity(filter: EntityDataDrivenTriggerEventOptions) {
     return function <T extends {
         onDiscard: (entity: Entity) => undefined | "DO NOT DISCARD"
+        onRemove?: (event: string) => void
         onTick?: (entity: Entity, block: Block) => void
     }>(constructor: T) {
         world.afterEvents.dataDrivenEntityTrigger.subscribe((event) => {
             const entity = event.entity;
             const block = getAttachedBlock(entity, true);
-            if (!block) return;
-            if (resolveBlockEntityType(block)?.id === entity.typeId) {
-                constructor.onTick?.(entity, block);
-            } else if (constructor.onDiscard(entity) !== "DO NOT DISCARD") { // 不用boolean是为了防手贱
-                system.run(() => entity.remove());
+            if (block) {
+                if (resolveBlockEntityType(block)?.id === entity.typeId) {
+                    constructor.onTick?.(entity, block);
+                } else if (constructor.onDiscard(entity) !== "DO NOT DISCARD") { // 不用boolean是为了防手贱
+                    system.run(() => entity.remove());
+                }
             }
         }, filter);
+        if (constructor.onRemove) {
+            world.afterEvents.entityRemove
+                .subscribe((event) => constructor.onRemove?.(event.removedEntityId), filter);
+        }
         return constructor;
     };
 }

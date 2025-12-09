@@ -74,8 +74,7 @@ export class BasketBlockEntity {
         for (let i = 0; i < 6; ++i) {
             const slot = container.getSlot(i);
             if (!slot.hasItem()) continue;
-            const itemId = slot.typeId;
-            const name: string[] = itemId.split(":");
+            const name: string[] = slot.typeId.split(":");
             const particle: string = name[0] == "minecraft" ? `farmersdelight:minecraft_stove_${name[1]}` : `${name[0]}:stove_${name[1]}`;
             dimension.spawnParticle(particle, {
                 x: x + rotatedOffsets[i].x,
