@@ -20,7 +20,7 @@ import { KnownTypedBlockStateKeys } from "../../data/KnownBlockStates";
 import { getEquipment, increaseAttribute } from "../../lib/EntityUtil";
 import { resolveSpec } from "../../lib/ObjectUtil";
 import { applyConsumeEffects, ConsumeEffectsSpec } from "../item/ConsumeEffectsComponent";
-import { isEnchanted } from "../../lib/ItemUtil";
+import { hurtEquippedItem, isEnchanted } from "../../lib/ItemUtil";
 
 export type PastrySpec = {
     slice: string;
@@ -100,10 +100,14 @@ export class PastryComponent implements BlockCustomComponent {
                 const permutation = block.permutation;
                 system.run(() => {
                     dropSlices(block, permutation, spec);
+                    hurtEquippedItem(event.player, stack);
                     block.setType("minecraft:air");
                 });
             } else {
-                system.run(() => block.setType("minecraft:air"));
+                system.run(() => {
+                    hurtEquippedItem(event.player, stack);
+                    block.setType("minecraft:air");
+                });
             }
             event.cancel = true;
         }

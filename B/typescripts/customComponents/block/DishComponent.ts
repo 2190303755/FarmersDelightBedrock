@@ -10,6 +10,7 @@ import {
     world,
 } from "@minecraft/server";
 import { blockComponent } from "../../lib/EventSubscriber";
+import { matchStack } from "../../lib/ItemUtil";
 
 interface DishSpec {
     has_leftovers?: boolean,
@@ -20,12 +21,6 @@ interface DishSpec {
 
 function requiresItem(tagOrId: string): string {
     return "farmersdelight.blockfood." + (tagOrId[0] === "#" ? tagOrId.substring(1) : tagOrId); // sic
-}
-
-function isInvalidItem(slot: ContainerSlot, tagOrId: string): boolean {
-    const stack = slot.getItem();
-    if (!stack) return true;
-    return tagOrId[0] === "#" ? !stack.hasTag(tagOrId.substring(1)) : stack.typeId !== tagOrId;
 }
 
 @blockComponent("farmersdelight:dish")
@@ -53,7 +48,7 @@ export class DishComponent implements BlockCustomComponent {
         if (spec.utensil) {
             if (!player) return;
             const slot = container?.getSlot(player.selectedSlotIndex);
-            if (!slot || isInvalidItem(slot, spec.utensil)) {
+            if (!slot || !matchStack(spec.utensil, slot.getItem())) {
                 player.onScreenDisplay.setActionBar({ translate: requiresItem(spec.utensil) });
                 return;
             }

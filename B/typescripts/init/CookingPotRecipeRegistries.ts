@@ -1,39 +1,43 @@
-import { ScoreboardObjective, system, world } from "@minecraft/server";
-import { vanillaCookingPotRecipe } from "../data/recipe/cookingPotRecipe";
+import { ScoreboardObjective, world } from "@minecraft/server";
 import { subscribeEvent } from "../lib/EventSubscriber";
+import { ReceiveScriptMessageEvent, ScoreboardLoadEvent } from "../lib/Events";
+import {
+    COOKING_POT_RECIPES,
+    populateV1, populateV2,
+    RecipeSpecV1,
+    RecipeSpecV2,
+} from "../data/recipe/cookingPotRecipe";
 
-let bool: boolean = true;
-let num: number = 0;
-
-export class CookingPotRecipeRegistries {
-    public static initCookingPotScoRegistries() {
-        system.runInterval(() => {
-            const allSco: ScoreboardObjective[] | undefined = world.scoreboard.getObjectives();
-            if (!allSco?.length || !bool) return;
-            for (const sco of allSco) {
-                const name: string = sco.displayName;
-                const reg: RegExpMatchArray | null = name.match(/farmersdelight_(\w+)/);
-                if (reg) {
-                    world.getDimension("overworld").runCommand(`function farmersdelight/cooking_pot_recipe_registries/${reg[1]}`);
-                }
+// noinspection JSUnusedGlobalSymbols
+export class CookingPotRecipeRegistry {
+    @subscribeEvent(ScoreboardLoadEvent)
+    static loadRecipes(objectives: ScoreboardObjective[]) {
+        for (const objective of objectives) {
+            const match: RegExpMatchArray | null = objective.displayName.match(/farmersdelight_(\w+)/);
+            if (match) {
+                world.getDimension("overworld")
+                    .runCommand(`function farmersdelight/cooking_pot_recipe_registries/${match[1]}`);
             }
-            bool = false;
-        })
+        }
     }
-    @subscribeEvent(system.afterEvents.scriptEventReceive, { namespaces: ["farmersdelight"] })
-    registries(args: any) {
-        const id: string = args.id;
-        if (id != "farmersdelight:cooking_pot_recipe") return;
-        const message: string = args.message;
+
+    @subscribeEvent(ReceiveScriptMessageEvent, "farmersdelight:cooking_pot_recipe")
+    static registerRecipe(message: string) {
+        let spec;
         try {
-            const json: any = JSON.parse(message);
-            if (!(json.time || json.ingredients || json.result)) return;
-            if (!json.ingredients.length || !json.result.item) return;
-            vanillaCookingPotRecipe.recipe.push(json);
-            num++;
-            console.warn(`已加载 §4${num}§f 个厨锅配方`);
+            spec = JSON.parse(message) as RecipeSpecV1 | RecipeSpecV2;
         } catch (error) {
+            console.error("Failed to parse cooking pot recipe", error);
             return;
         }
+        if (!spec.time) return;
+        if (!spec.result || !spec.result.item) return;
+        if (!spec.ingredients || !spec.ingredients.length) return;
+        if ((spec as RecipeSpecV2).format === 2) {
+            COOKING_POT_RECIPES.addSortableRecipe(populateV2(spec as RecipeSpecV2));
+        } else {
+            COOKING_POT_RECIPES.addSortableRecipe(populateV1(spec as RecipeSpecV1));
+        }
+        console.info("Registered cooking pot recipe for", spec.result.item);
     }
 }

@@ -1,4 +1,4 @@
-export type SortableRecipe = {
+export interface SortableRecipe {
     priority?: number;
 }
 
